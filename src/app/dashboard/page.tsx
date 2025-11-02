@@ -51,9 +51,12 @@ export default function DashboardPage() {
   return (
     <main style={{ minHeight: '100dvh', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)', color: 'white' }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Image src="/finova_logo_arkaplan_yok.png" alt="Finova" width={28} height={28} />
           <strong>Finova</strong>
+          <nav style={{ display: 'flex', gap: 8, marginLeft: 12 }}>
+            <button onClick={() => router.push('/accounts')} style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Cariler</button>
+          </nav>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, opacity: 0.9 }}>
           <span>{email}</span>
