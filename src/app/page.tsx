@@ -15,11 +15,11 @@ export default function HomePage() {
       setHasSession(!!data.session);
     };
     load();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setHasSession(!!session);
     });
     return () => {
-      sub.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -32,12 +32,10 @@ export default function HomePage() {
         </div>
         <p style={{ marginTop: 0, opacity: 0.9 }}>Ön muhasebe uygulaması için başlangıç iskeleti hazır. Supabase bağlantısını .env.local ile yapılandırın ve Vercel’e dağıtın.</p>
         <div style={{ display: 'flex', gap: 12, marginTop: 16, alignItems: 'center' }}>
-          {hasSession ? (
+          <button onClick={() => router.push('/login')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white', cursor: 'pointer' }}>Giriş Yap</button>
+          {hasSession && (
             <button onClick={() => router.push('/dashboard')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white', cursor: 'pointer' }}>Dashboard’a Git</button>
-          ) : (
-            <button onClick={() => router.push('/login')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white', cursor: 'pointer' }}>Giriş Yap</button>
           )}
-          <a onClick={(e) => { e.preventDefault(); router.push('/login'); }} href="/login" style={{ color: '#cde1ff', fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}>Giriş Yap (bağlantı)</a>
         </div>
       </div>
     </main>
