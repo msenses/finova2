@@ -39,11 +39,9 @@ export default function LoginPage() {
 
   return (
     <main style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)' }}>
-      <form onSubmit={handleSubmit} style={{ width: 400, maxWidth: '92%', padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', color: 'white' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <Image src="/finova_logo.png" alt="Finova" width={36} height={36} />
-          <h1 style={{ fontSize: 20, margin: 0 }}>Finova {mode === 'signin' ? 'Giriş' : 'Kayıt'}</h1>
-        </div>
+      <div style={{ display: 'grid', placeItems: 'center', rowGap: 16 }}>
+        <Image src="/finova_logo_arkaplan_yok.png" alt="Finova" width={96} height={96} />
+        <form onSubmit={handleSubmit} style={{ width: 400, maxWidth: '92%', padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', color: 'white' }}>
         <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>E-posta</label>
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="ornek@finova.app" style={{ width: '100%', marginTop: 6, marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
         <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>Şifre</label>
@@ -64,6 +62,7 @@ export default function LoginPage() {
           )}
         </div>
       </form>
+      </div>
     </main>
   );
 }
