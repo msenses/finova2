@@ -3,6 +3,15 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     typedRoutes: true
+  },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/login',
+        permanent: false
+      }
+    ];
   }
 };
 
