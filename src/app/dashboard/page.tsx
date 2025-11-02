@@ -67,6 +67,10 @@ export default function DashboardPage() {
             <div style={{ fontSize: 14, opacity: 0.9 }}>Hızlı Başlangıç</div>
             <div style={{ marginTop: 6, fontSize: 13, opacity: 0.8 }}>Sol üstte logo, sağda oturum. Buradan Cariler ve Faturalar modüllerini ekleyeceğiz.</div>
           </div>
+          <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)' }}>
+            <div style={{ fontSize: 14, opacity: 0.9, marginBottom: 8 }}>Cariler</div>
+            <button onClick={() => router.push('/accounts')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white', cursor: 'pointer' }}>Cari Listesine Git</button>
+          </div>
         </div>
       </section>
     </main>
