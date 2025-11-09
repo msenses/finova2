@@ -37,6 +37,21 @@ export default function AccountNewPage() {
   const [district, setDistrict] = useState('');
   const [address, setAddress] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
+  const [showShipping, setShowShipping] = useState(false);
+  type ShippingRow = {
+    country: string;
+    city: string;
+    district: string;
+    contact: string;
+    postalCode: string;
+    phone: string;
+    mobile: string;
+    email: string;
+    address: string;
+  };
+  const [shippingRows, setShippingRows] = useState<ShippingRow[]>([
+    { country: '', city: '', district: '', contact: '', postalCode: '', phone: '', mobile: '', email: '', address: '' },
+  ]);
 
   // Diğer
   const [code, setCode] = useState('');
@@ -213,7 +228,10 @@ export default function AccountNewPage() {
                   <input value={code} onChange={(e) => setCode(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                 </div>
                 <div>
-                  <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Sevk Adresi Ekle</button>
+                  <button type="button" onClick={() => setShowShipping(true)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Sevk Adresi Ekle</button>
+                  {!!shippingRows.length && (shippingRows.some(r => r.address || r.city || r.district) || shippingAddress) && (
+                    <div style={{ marginTop: 6, fontSize: 12, opacity: 0.85 }}>{shippingRows.length} sevk adresi tanımlı</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -227,6 +245,53 @@ export default function AccountNewPage() {
           </form>
         </div>
       </div>
+
+      {/* Sevk Adresleri Modal */}
+      {showShipping && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'grid', placeItems: 'center', zIndex: 2000 }} onClick={() => setShowShipping(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 'min(1100px,96%)', background: 'white', color: '#222', borderRadius: 12, overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.35)' }}>
+            <div style={{ padding: '10px 14px', background: '#12b3c5', color: 'white', fontWeight: 700 }}>Sevk Adresleri</div>
+            <div style={{ padding: 12, background: '#f8f9fb' }}>
+              {/* Tablo başlıkları */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 0.9fr 1fr 1fr 1.2fr 1.6fr 40px', gap: 8, fontSize: 12, fontWeight: 700, color: '#0e3aa3', marginBottom: 6 }}>
+                <div>Ülke</div>
+                <div>İl</div>
+                <div>İlçe</div>
+                <div>Yetkili</div>
+                <div>Posta Kodu</div>
+                <div>Telefon</div>
+                <div>Cep Telefon</div>
+                <div>Mail</div>
+                <div>Sevk Adresi</div>
+                <div>Sil</div>
+              </div>
+              {/* Satırlar */}
+              <div style={{ display: 'grid', gap: 8, maxHeight: 360, overflow: 'auto', paddingRight: 4 }}>
+                {shippingRows.map((row, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 0.9fr 1fr 1fr 1.2fr 1.6fr 40px', gap: 8 }}>
+                    <input value={row.country} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, country: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.city} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, city: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.district} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, district: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.contact} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, contact: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.postalCode} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, postalCode: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.phone} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, phone: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.mobile} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, mobile: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.email} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, email: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <input value={row.address} onChange={(e) => setShippingRows(prev => prev.map((r,i)=> i===idx ? { ...r, address: e.target.value } : r))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d0d7de' }} />
+                    <button type="button" onClick={() => setShippingRows(prev => prev.filter((_r,i)=> i!==idx))} style={{ padding: '8px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', color: '#e74c3c', cursor: 'pointer' }}>✕</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Alt aksiyonlar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                <button type="button" onClick={() => setShippingRows(prev => [...prev, { country:'', city:'', district:'', contact:'', postalCode:'', phone:'', mobile:'', email:'', address:'' }])} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2ecc71', background: '#2ecc71', color: 'white', cursor: 'pointer' }}>Ekle</button>
+                <button type="button" onClick={() => { setShowShipping(false); if (shippingRows[0]) { setShippingAddress(shippingRows[0].address); } }} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid #12b3c5', background: '#12b3c5', color: 'white', cursor: 'pointer' }}>💾 Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
