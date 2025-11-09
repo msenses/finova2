@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import type { Route } from 'next';
 
-type Account = { id: string; name: string; code: string | null; phone: string | null; email: string | null; balance: number | null };
+type Account = { id: string; name: string; code: string | null; phone: string | null; email: string | null; balance: number | null; tax_id?: string | null; address?: string | null };
 type Inv = { id: string; invoice_no: string | null; invoice_date: string; type: 'sales' | 'purchase'; total: number };
 
 export default function AccountDetailPage() {
@@ -18,6 +18,10 @@ export default function AccountDetailPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [tab, setTab] = useState<'firma' | 'ayr' | 'banka' | 'sevk'>('firma');
+  const [bankRows, setBankRows] = useState<Array<{ bank: string; branch: string; accountNo: string; branchNo: string; iban: string }>>([
+    { bank: '', branch: '', accountNo: '', branchNo: '', iban: '' },
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -30,7 +34,7 @@ export default function AccountDetailPage() {
           router.replace('/login');
           return;
         }
-        const { data: acc } = await supabase.from('accounts').select('id, name, code, phone, email, balance').eq('id', accountId).single();
+        const { data: acc } = await supabase.from('accounts').select('id, name, code, phone, email, balance, tax_id, address').eq('id', accountId).single();
         if (!active) return;
         setAccount(acc as any);
         const { data: invs } = await supabase
@@ -102,14 +106,71 @@ export default function AccountDetailPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 12 }}>
               {/* Sol: Bilgiler ve hızlı raporlar */}
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, background: 'rgba(0,0,0,0.12)', borderRadius: 8, padding: 12 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 8 }}>
-                    <div>Firma Adı :</div>
-                    <div>{account?.name ?? '-'}</div>
-                    <div>Grup :</div>
-                    <div>{'MÜŞTERİLER'}</div>
-                    <div>Yetkili :</div>
-                    <div>{'-'}</div>
+                {/* Sekmeli kutu */}
+                <div style={{ background: 'rgba(0,0,0,0.08)', borderRadius: 8, overflow: 'hidden' }}>
+                  {/* Tabs */}
+                  <div style={{ display: 'flex', gap: 0, padding: 6, background: 'rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                    <button onClick={() => setTab('firma')} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', background: tab === 'firma' ? 'rgba(255,255,255,0.14)' : 'transparent', color: 'white', cursor: 'pointer' }}>Firma Bilgileri</button>
+                    <button onClick={() => setTab('ayr')} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', background: tab === 'ayr' ? 'rgba(255,255,255,0.14)' : 'transparent', color: 'white', cursor: 'pointer', marginLeft: 8 }}>Ayrıntılar</button>
+                    <button onClick={() => setTab('banka')} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', background: tab === 'banka' ? 'rgba(255,255,255,0.14)' : 'transparent', color: 'white', cursor: 'pointer', marginLeft: 8 }}>Banka Bilgileri</button>
+                    <button onClick={() => setTab('sevk')} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', background: tab === 'sevk' ? 'rgba(255,255,255,0.14)' : 'transparent', color: 'white', cursor: 'pointer', marginLeft: 8 }}>Cari Sevk Bilgileri</button>
+                  </div>
+                  {/* Content */}
+                  <div style={{ padding: 12, background: 'rgba(255,255,255,0.02)' }}>
+                    {tab === 'firma' && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 8 }}>
+                        <div>Firma Adı :</div>
+                        <div>{account?.name ?? '-'}</div>
+                        <div>Grup :</div>
+                        <div>{'MÜŞTERİLER'}</div>
+                        <div>Yetkili :</div>
+                        <div>{'-'}</div>
+                      </div>
+                    )}
+                    {tab === 'ayr' && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 8 }}>
+                        <div>Kod :</div>
+                        <div>{account?.code ?? '-'}</div>
+                        <div>Vergi No/TCKN :</div>
+                        <div>{account?.tax_id ?? '-'}</div>
+                        <div>E-posta :</div>
+                        <div>{account?.email ?? '-'}</div>
+                        <div>Telefon :</div>
+                        <div>{account?.phone ?? '-'}</div>
+                        <div>Adres :</div>
+                        <div>{account?.address ?? '-'}</div>
+                      </div>
+                    )}
+                    {tab === 'banka' && (
+                      <div>
+                        {/* Başlık satırı */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1.6fr', gap: 8, fontSize: 12, opacity: 0.9, marginBottom: 8 }}>
+                          <div>Banka Adı</div>
+                          <div>Şube</div>
+                          <div>Hesap No</div>
+                          <div>Şube No</div>
+                          <div>IBAN</div>
+                        </div>
+                        {/* Satırlar */}
+                        <div style={{ display: 'grid', gap: 8 }}>
+                          {bankRows.map((r, idx) => (
+                            <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1.6fr', gap: 8 }}>
+                              <input value={r.bank} onChange={(e) => setBankRows(prev => prev.map((x,i)=> i===idx ? { ...x, bank: e.target.value } : x))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.12)', color: 'white' }} />
+                              <input value={r.branch} onChange={(e) => setBankRows(prev => prev.map((x,i)=> i===idx ? { ...x, branch: e.target.value } : x))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.12)', color: 'white' }} />
+                              <input value={r.accountNo} onChange={(e) => setBankRows(prev => prev.map((x,i)=> i===idx ? { ...x, accountNo: e.target.value } : x))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.12)', color: 'white' }} />
+                              <input value={r.branchNo} onChange={(e) => setBankRows(prev => prev.map((x,i)=> i===idx ? { ...x, branchNo: e.target.value } : x))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.12)', color: 'white' }} />
+                              <input value={r.iban} onChange={(e) => setBankRows(prev => prev.map((x,i)=> i===idx ? { ...x, iban: e.target.value } : x))} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.12)', color: 'white' }} />
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: 10 }}>
+                          <button type="button" onClick={() => router.push((`/accounts/${accountId}/banks/new`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Ekle +</button>
+                        </div>
+                      </div>
+                    )}
+                    {tab === 'sevk' && (
+                      <div style={{ opacity: 0.8 }}>Sevk adresleri listesi burada gösterilecek.</div>
+                    )}
                   </div>
                 </div>
 
@@ -117,7 +178,7 @@ export default function AccountDetailPage() {
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                   <button onClick={() => router.push((`/reports?type=cari-ekstre&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Ekstre</button>
                   <button onClick={() => router.push((`/reports?type=cari-islem&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari İşlemler Raporu</button>
-                  <button onClick={() => alert('Kargo fişi (örnek)')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>🧾 Kargo Fişi</button>
+                  <button onClick={() => router.push((`/accounts/${accountId}/cargo`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>🧾 Kargo Fişi</button>
                   <button onClick={() => router.push((`/reports?type=mutabakat&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Mutabakat Raporu</button>
                 </div>
 
@@ -166,6 +227,7 @@ export default function AccountDetailPage() {
                           e.stopPropagation();
                           setOpenMenuId((curr) => (curr === r.id ? null : r.id));
                         }}
+                        onMouseDown={(e) => e.stopPropagation()}
                         style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}
                       >
                         İşlemler ▾
@@ -182,7 +244,8 @@ export default function AccountDetailPage() {
                             color: '#222',
                             borderRadius: 8,
                             boxShadow: '0 10px 24px rgba(0,0,0,0.25)',
-                            zIndex: 50,
+                            zIndex: 1500,
+                            border: '1px solid #e5e7eb',
                             overflow: 'hidden',
                           }}
                           onMouseDown={(e) => e.stopPropagation()}
