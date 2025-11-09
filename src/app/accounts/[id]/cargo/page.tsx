@@ -22,6 +22,7 @@ export default function CargoSlipPage() {
   const params = useParams<{ id: string }>();
   const accountId = params?.id;
   const [acc, setAcc] = useState<Account | null>(null);
+  const [printing, setPrinting] = useState(false);
 
   // form states
   const [group, setGroup] = useState('MÜŞTERİLER');
@@ -61,12 +62,38 @@ export default function CargoSlipPage() {
     if (accountId) load();
   }, [accountId, router]);
 
+  const handlePrint = () => {
+    setPrinting(true);
+    // Küçük gecikme ile UI'yı güncelle
+    setTimeout(() => {
+      window.print();
+      setPrinting(false);
+    }, 50);
+  };
+
   return (
     <main style={{ minHeight: '100dvh', color: 'white' }}>
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .print-wrapper {
+            color: #000;
+            background: #fff;
+            -webkit-print-color-adjust: exact;
+          }
+          .print-box { border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; }
+          .print-section-title { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 700; font-size: 12px; color: #000; }
+        }
+      `}</style>
       <div style={{ padding: 16 }}>
-        <button onClick={() => window.print()} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>🧾 Kargo Fişi</button>
+        {/* Toolbar */}
+        <div className="no-print" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button onClick={handlePrint} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>🧾 Kargo Fişi</button>
+          <button onClick={() => router.push((`/accounts/${accountId}`) as Route)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Geri</button>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
+        {/* Ekran formu */}
+        <div className="no-print" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
           {/* Cari Bilgileri */}
           <section style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: 16 }}>
             <div style={{ fontWeight: 700, marginBottom: 10 }}>Cari Bilgileri</div>
@@ -109,6 +136,29 @@ export default function CargoSlipPage() {
               <div><div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Sevk Adresi:</div><input value={shippingAddr} onChange={(e) => setShippingAddr(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} /></div>
             </div>
           </section>
+        </div>
+
+        {/* Yazdırılabilir görünüm */}
+        <div className="print-wrapper" style={{ marginTop: 24, background: printing ? '#fff' : 'transparent', color: printing ? '#000' : 'inherit' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '30px 1fr', gap: 12, alignItems: 'start', maxWidth: 720 }}>
+            {/* GÖNDEREN */}
+            <div className="print-section-title">GÖNDEREN</div>
+            <div className="print-box">
+              <div style={{ fontSize: 12, fontWeight: 700 }}>ADI SOYADI: {acc?.name ? 'TEST BILSOFT' : 'TEST BILSOFT'}</div>
+              <div style={{ fontSize: 12, marginTop: 6 }}>ADRES :</div>
+              <div style={{ fontSize: 12 }}>TEL : {tel}{mobile ? ' / ' + mobile : ''}</div>
+              <div style={{ fontSize: 12 }}>Vergi Dairesi/Vergi No : {taxOffice || '-'} / {taxId || '-'}</div>
+            </div>
+
+            {/* ALICI */}
+            <div className="print-section-title" style={{ marginTop: 16 }}>ALICI</div>
+            <div className="print-box" style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 700 }}>ADI SOYADI: {name || acc?.name || '-'}</div>
+              <div style={{ fontSize: 12, marginTop: 6 }}>ADRES : {invoiceAddr || '-'}</div>
+              <div style={{ fontSize: 12 }}>TEL : {tel}{mobile ? ' / ' + mobile : ''}</div>
+              <div style={{ fontSize: 12 }}>Vergi Dairesi/Vergi No : {taxOffice || '-'} / {taxId || '-'}</div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
