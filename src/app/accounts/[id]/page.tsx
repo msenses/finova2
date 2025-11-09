@@ -191,7 +191,7 @@ export default function AccountDetailPage() {
               {/* Sağ: Cari işlem butonları */}
               <aside style={{ display: 'grid', gap: 8, alignContent: 'start' }}>
                 <button onClick={() => router.push((`/invoices/new?sales=1&account=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #2980b9', background: '#2980b9', color: 'white', cursor: 'pointer' }}>Cariye Stoklu Satış</button>
-                <button onClick={() => router.push((`/invoices/new?sales=1&account=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #3498db', background: '#3498db', color: 'white', cursor: 'pointer' }}>Cariye Stoksuz Satış</button>
+                <button onClick={() => router.push((`/accounts/${accountId}/sales/quick`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #3498db', background: '#3498db', color: 'white', cursor: 'pointer' }}>Cariye Stoksuz Satış</button>
                 <button onClick={() => router.push((`/cash?credit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #16a085', background: '#16a085', color: 'white', cursor: 'pointer' }}>Cariden Tahsilat Yap</button>
                 <button onClick={() => router.push((`/cash?debit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #27ae60', background: '#27ae60', color: 'white', cursor: 'pointer' }}>Cariye Ödeme Yap</button>
                 <button onClick={() => router.push((`/cash?credit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #2c3e50', background: '#2c3e50', color: 'white', cursor: 'pointer' }}>Cariyi Alacaklandır</button>

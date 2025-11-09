@@ -128,38 +128,101 @@ export default function InvoiceNewClientPage() {
   return (
     <main style={{ minHeight: '100dvh', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)', color: 'white' }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}>
-        <strong>Yeni Fatura</strong>
+        <strong>Satış Faturası</strong>
       </header>
       <section style={{ padding: 16 }}>
-        <form onSubmit={submit} style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)' }}>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>Tür</label>
-                <select value={type} onChange={(e) => setType(e.target.value as any)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
-                  <option value="sales">Satış</option>
-                  <option value="purchase">Alış</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>Tarih</label>
-                <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>Fatura No</label>
-                <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} placeholder="Otomatik" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 13, opacity: 0.9 }}>Cari</label>
-                <select value={accountId} onChange={(e) => setAccountId(e.target.value)} required style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
-                  <option value="">Seçin…</option>
-                  {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                </select>
+        <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
+          {/* Üst bloklar */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 360px', gap: 12 }}>
+            {/* Cari Bilgileri */}
+            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <div style={{ fontWeight: 700, marginBottom: 10, opacity: 0.95 }}>Cari Bilgileri</div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Cari</div>
+                  <select value={accountId} onChange={(e) => setAccountId(e.target.value)} required style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option value="">Seçiniz…</option>
+                    {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Ünvan</div>
+                  <input placeholder="Mehmet Bey" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Yetkili</div>
+                  <input placeholder="Ahmet Bey" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Adres</div>
+                  <input placeholder="Merkez" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Mail</div>
+                  <input placeholder="mail@example.com" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
               </div>
             </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+            {/* Vergi Bilgileri */}
+            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <div style={{ fontWeight: 700, marginBottom: 10, opacity: 0.95 }}>Vergi Bilgileri</div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Vergi Dairesi</div>
+                  <input placeholder="Üsküdar" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Vergi No</div>
+                  <input placeholder="12345678" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>İl</div>
+                  <input placeholder="Düzce" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>İlçe</div>
+                  <input placeholder="Merkez" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Fatura Bilgileri */}
+            <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+                <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Fatura Bilgileri</button>
+                <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(77,116,255,0.4)', background: 'rgba(77,116,255,0.25)', color: 'white' }}>Alış/Satış Ayarları</button>
+              </div>
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Fatura Tarihi</div>
+                  <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Sevk Tarihi</div>
+                  <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Saat</div>
+                  <input type="time" defaultValue="13:43" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8 }}>Fatura No</div>
+                  <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} placeholder="Otomatik" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Barkod ve ürün ekle */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 12 }}>
+            <input placeholder="Barkod..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
+            <button type="button" onClick={addLine} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', background: '#e85b4a', color: 'white' }}>Ürün Ekle</button>
+          </div>
+
+          {/* Satır tablosu */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
                   <tr style={{ textAlign: 'left', color: 'white', opacity: 0.9 }}>
                     <th style={{ padding: '10px 8px' }}>Ürün</th>
@@ -167,7 +230,9 @@ export default function InvoiceNewClientPage() {
                     <th style={{ padding: '10px 8px' }}>Miktar</th>
                     <th style={{ padding: '10px 8px' }}>Birim Fiyat</th>
                     <th style={{ padding: '10px 8px' }}>KDV %</th>
-                    <th style={{ padding: '10px 8px', textAlign: 'right' }}>Tutar</th>
+                    <th style={{ padding: '10px 8px' }}>İsk.%</th>
+                    <th style={{ padding: '10px 8px' }}>İsk.TL</th>
+                    <th style={{ padding: '10px 8px', textAlign: 'right' }}>G.TOPLAM</th>
                     <th style={{ padding: '10px 8px' }}></th>
                   </tr>
                 </thead>
@@ -195,7 +260,13 @@ export default function InvoiceNewClientPage() {
                         <td style={{ padding: '8px' }}>
                           <input type="number" step="0.01" value={l.vat_rate} onChange={(e) => setLine(idx, { vat_rate: parseFloat(e.target.value) || 0 })} style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                         </td>
-                        <td style={{ padding: '8px', textAlign: 'right' }}>{lineTotal.toFixed(2)}</td>
+                      <td style={{ padding: '8px' }}>
+                        <input type="number" step="0.01" value={0} disabled style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white', opacity: 0.6 }} />
+                      </td>
+                      <td style={{ padding: '8px' }}>
+                        <input type="number" step="0.01" value={0} disabled style={{ width: 100, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white', opacity: 0.6 }} />
+                      </td>
+                      <td style={{ padding: '8px', textAlign: 'right' }}>{lineTotal.toFixed(2)}</td>
                         <td style={{ padding: '8px' }}>
                           <button type="button" onClick={() => removeLine(idx)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Sil</button>
                         </td>
@@ -203,27 +274,64 @@ export default function InvoiceNewClientPage() {
                     );
                   })}
                 </tbody>
-              </table>
-              <div style={{ marginTop: 8 }}>
-                <button type="button" onClick={addLine} style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Satır Ekle</button>
+            </table>
+          </div>
+
+          {/* Alt blok: Tutarlar + Açıklama/Ödeme */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)' }}>
+              <div style={{ fontWeight: 700, marginBottom: 8 }}>Tutarlar</div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>İskonto</span><strong>0.00</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Ara Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>KDV Tutar</span><strong>{totals.vat.toFixed(2)}</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ÖTV Tutar</span><strong>0.00</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}><span>G.Toplam</span><strong>{totals.total.toFixed(2)}</strong></div>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div />
-              <div style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}><span>Net</span><strong>{totals.net.toFixed(2)}</strong></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}><span>KDV</span><strong>{totals.vat.toFixed(2)}</strong></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Toplam</span><strong>{totals.total.toFixed(2)}</strong></div>
+            <div style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', display: 'grid', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Açıklama</div>
+                <input placeholder="Açıklama" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
               </div>
-            </div>
-
-            {err && <div style={{ color: '#ffb4b4' }}>{err}</div>}
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" onClick={() => router.push('/invoices')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Vazgeç</button>
-              <button disabled={loading} type="submit" style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white' }}>{loading ? 'Kaydediliyor…' : 'Kaydet'}</button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Ödenen</div>
+                  <input placeholder="0.00" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Depo Seçiniz</div>
+                  <select style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option>Merkez</option>
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Kasa Seçiniz</div>
+                  <select style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option>Varsayılan Kasa</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Ödeme Şekli</div>
+                  <select style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option>Nakit</option>
+                    <option>Havale</option>
+                    <option>Kredi Kartı</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button type="button" onClick={() => router.push('/invoices')} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Vazgeç</button>
+                  <button disabled={loading} type="submit" style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.15)', color: 'white' }}>{loading ? 'Kaydediliyor…' : 'Kaydet'}</button>
+                </div>
+              </div>
             </div>
           </div>
+
+          {err && <div style={{ color: '#ffb4b4' }}>{err}</div>}
         </form>
       </section>
     </main>
