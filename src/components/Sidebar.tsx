@@ -33,7 +33,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 240, padding: 16, borderRight: '1px solid rgba(255,255,255,0.12)', background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(6px)' }}>
+    <aside style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 240, padding: 16, borderRight: '1px solid rgba(255,255,255,0.12)', background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(6px)', zIndex: 1000 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
         <Image src="/finova_logo_2.png" alt="Finova" width={160} height={40} style={{ height: 24, width: 'auto' }} />
         <strong>Finova</strong>
