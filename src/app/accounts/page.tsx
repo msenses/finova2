@@ -119,7 +119,7 @@ export default function AccountsPage() {
     <main style={{ minHeight: '100dvh', color: 'white' }}>
       {/* Üst Araç Çubuğu */}
       <div style={{ padding: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button onClick={() => setShowNew(true)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#e74c3c', color: 'white', cursor: 'pointer' }}>+Yeni Cari</button>
+        <button onClick={() => router.push('/accounts/new')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#e74c3c', color: 'white', cursor: 'pointer' }}>+Yeni Cari</button>
         <button onClick={() => {}} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#3498db', color: 'white', cursor: 'pointer' }}>Gruplar</button>
         <button onClick={() => router.push('/reports')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#d4a40c', color: 'white', cursor: 'pointer' }}>Raporlar ▾</button>
         <button onClick={() => router.push('/cash')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#16a085', color: 'white', cursor: 'pointer' }}>Mahsup fişi</button>
@@ -149,17 +149,7 @@ export default function AccountsPage() {
         </div>
       </section>
 
-      {showNew && (
-        <NewAccountModal
-          onClose={() => setShowNew(false)}
-          onCreated={() => {
-            setShowNew(false);
-            // tetiklemek için q değerini aynı değere set ederek yükleme çağır
-            setLoading(true);
-            setQ((prev) => prev);
-          }}
-        />
-      )}
+      {/* Yeni Cari artık sayfaya taşındı (/accounts/new). Modal kullanılmıyor. */}
     </main>
   );
 }
