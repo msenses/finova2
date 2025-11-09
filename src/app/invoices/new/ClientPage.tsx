@@ -26,7 +26,7 @@ export default function InvoiceNewClientPage() {
   const [type, setType] = useState<'sales' | 'purchase'>(defaultType as any);
   const [invoiceDate, setInvoiceDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [invoiceNo, setInvoiceNo] = useState('');
-  const [accountId, setAccountId] = useState<string>('');
+  const [accountId, setAccountId] = useState<string>(typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('account') ?? ''));
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [lines, setLines] = useState<Line[]>([{ product_id: null, name: '', qty: 1, unit_price: 0, vat_rate: 20 }]);

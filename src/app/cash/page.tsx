@@ -1,14 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function CashPage() {
   const router = useRouter();
+  const search = useSearchParams();
   const [accounts, setAccounts] = useState<{ id: string; name: string }[]>([]);
-  const [debitId, setDebitId] = useState('');
-  const [creditId, setCreditId] = useState('');
+  const [debitId, setDebitId] = useState(() => search.get('debit') ?? '');
+  const [creditId, setCreditId] = useState(() => search.get('credit') ?? '');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [date, setDate] = useState<string>(() => new Date().toISOString().slice(0, 10));

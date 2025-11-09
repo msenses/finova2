@@ -90,30 +90,45 @@ export default function AccountDetailPage() {
             <button onClick={() => router.push((`/accounts/${accountId}/edit`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: '#3498db', color: 'white' }}>Düzenle</button>
           </div>
 
-          {/* Sekmeler/Özet */}
+          {/* Bilgiler (sol) + İşlemler (sağ) */}
           <div style={{ padding: 12 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, background: 'rgba(0,0,0,0.12)', borderRadius: 8, padding: 12 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 8 }}>
-                <div>Firma Adı :</div>
-                <div>{account?.name ?? '-'}</div>
-                <div>Grup :</div>
-                <div>{'MÜŞTERİLER'}</div>
-                <div>Yetkili :</div>
-                <div>{'-'}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 12 }}>
+              {/* Sol: Bilgiler ve hızlı raporlar */}
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10, background: 'rgba(0,0,0,0.12)', borderRadius: 8, padding: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 8 }}>
+                    <div>Firma Adı :</div>
+                    <div>{account?.name ?? '-'}</div>
+                    <div>Grup :</div>
+                    <div>{'MÜŞTERİLER'}</div>
+                    <div>Yetkili :</div>
+                    <div>{'-'}</div>
+                  </div>
+                </div>
+
+                {/* Hızlı rapor butonları */}
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <button onClick={() => router.push((`/reports?type=cari-ekstre&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Ekstre</button>
+                  <button onClick={() => router.push((`/reports?type=cari-islem&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari İşlemler Raporu</button>
+                  <button onClick={() => alert('Kargo fişi (örnek)')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>🧾 Kargo Fişi</button>
+                  <button onClick={() => router.push((`/reports?type=mutabakat&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Mutabakat Raporu</button>
+                </div>
+
+                {/* Bakiye */}
+                <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.04)' }}>
+                  Bakiye : {balanceBadge(Number(account?.balance ?? 0))}
+                </div>
               </div>
-            </div>
 
-            {/* Hızlı Rap. Butonları */}
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button onClick={() => router.push((`/reports?type=cari-ekstre&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Ekstre</button>
-              <button onClick={() => router.push((`/reports?type=cari-islem&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari İşlemler Raporu</button>
-              <button onClick={() => alert('Kargo fişi mock')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>🧾 Kargo Fişi</button>
-              <button onClick={() => router.push((`/reports?type=mutabakat&id=${accountId}`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>≡ Cari Mutabakat Raporu</button>
-            </div>
-
-            {/* Bakiye */}
-            <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.04)' }}>
-              Bakiye : {balanceBadge(Number(account?.balance ?? 0))}
+              {/* Sağ: Cari işlem butonları */}
+              <aside style={{ display: 'grid', gap: 8, alignContent: 'start' }}>
+                <button onClick={() => router.push((`/invoices/new?sales=1&account=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #2980b9', background: '#2980b9', color: 'white', cursor: 'pointer' }}>Cariye Stoklu Satış</button>
+                <button onClick={() => router.push((`/invoices/new?sales=1&account=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #3498db', background: '#3498db', color: 'white', cursor: 'pointer' }}>Cariye Stoksuz Satış</button>
+                <button onClick={() => router.push((`/cash?credit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #16a085', background: '#16a085', color: 'white', cursor: 'pointer' }}>Cariden Tahsilat Yap</button>
+                <button onClick={() => router.push((`/cash?debit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #27ae60', background: '#27ae60', color: 'white', cursor: 'pointer' }}>Cariye Ödeme Yap</button>
+                <button onClick={() => router.push((`/cash?credit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #2c3e50', background: '#2c3e50', color: 'white', cursor: 'pointer' }}>Cariyi Alacaklandır</button>
+                <button onClick={() => router.push((`/cash?debit=${accountId}`) as Route)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #7f8c8d', background: '#7f8c8d', color: 'white', cursor: 'pointer' }}>Cariye Borçlandır</button>
+              </aside>
             </div>
           </div>
         </div>
