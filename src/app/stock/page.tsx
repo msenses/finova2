@@ -95,6 +95,34 @@ export default function StockPage() {
   return (
     <main style={{ minHeight: '100dvh', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)', color: 'white' }}>
       <section style={{ padding: 16 }}>
+        {/* Üst breadcrumb ve aksiyon butonları */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 8 }}>Ana Sayfa / Stok Kartları</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: 12, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <button
+              onClick={() => router.push('/stock/new')}
+              style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #0b5ed7', background: '#0d6efd', color: 'white', cursor: 'pointer' }}
+            >
+              Yeni Stok (F5)
+            </button>
+            <button style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>
+              Gruplar
+            </button>
+            <button style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>
+              Birimler
+            </button>
+            <button style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>
+              Depolar
+            </button>
+            <button style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>
+              Stok Paket Grupları
+            </button>
+            <button style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #d4ac0d', background: '#f1c40f', color: '#2c3e50', cursor: 'pointer' }}>
+              Raporlar
+            </button>
+          </div>
+        </div>
+
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
           <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>STOK KART LİSTESİ</div>
 
