@@ -19,6 +19,9 @@ export default function StockDetailPage({ params }: { params: { id: string } }) 
   const [from, setFrom] = useState<string>('');
   const [to, setTo] = useState<string>('');
   const [type, setType] = useState<'all' | 'in' | 'out'>('all');
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageUrlDraft, setImageUrlDraft] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -40,6 +43,8 @@ export default function StockDetailPage({ params }: { params: { id: string } }) 
       if (!active) return;
       setProduct((p ?? null) as any);
       setMoves(((m ?? []) as any).map((x: any) => ({ id: x.id, created_at: x.created_at, move_type: x.move_type, qty: x.qty })));
+      // Şimdilik sadece UI'de saklanacak
+      setImageUrl('');
       setLoading(false);
     };
     init();
@@ -84,21 +89,56 @@ export default function StockDetailPage({ params }: { params: { id: string } }) 
           </div>
           <div style={{ borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)', padding: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 12 }}>
-              <div style={{ border: '1px dashed rgba(255,255,255,0.3)', borderRadius: 8, height: 180, display: 'grid', placeItems: 'center', opacity: 0.8 }}>
-                RESİM MEVCUT DEĞİL
+              <div
+                onClick={() => { setImageUrlDraft(imageUrl); setShowImageModal(true); }}
+                title="Resmi değiştir"
+                style={{ border: '1px dashed rgba(255,255,255,0.3)', borderRadius: 8, height: 180, display: 'grid', placeItems: 'center', cursor: 'pointer', overflow: 'hidden', background: 'rgba(0,0,0,0.15)' }}
+              >
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt="Stok Görseli" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <div style={{ opacity: 0.8 }}>RESİM MEVCUT DEĞİL</div>
+                )}
               </div>
               <div style={{ display: 'grid', gap: 8, alignContent: 'start' }}>
-                <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Stok Girişi</button>
-                <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Stok Çıkışı</button>
-                <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Şube Aktarım</button>
+                <button onClick={() => router.push((`/stock/${productId}/in`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Stok Girişi</button>
+                <button onClick={() => router.push((`/stock/${productId}/out`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Stok Çıkışı</button>
+                <button onClick={() => router.push((`/stock/${productId}/branch-transfer`) as Route)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Şube Aktarım</button>
                 <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Depo Aktarım</button>
-                <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Resim Linki Ekle</button>
+                <button onClick={() => { setImageUrlDraft(imageUrl); setShowImageModal(true); }} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Resim Linki Ekle</button>
                 <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Yeni Satış Fiyatı Ekle</button>
                 <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>● Stok Lot Bilgileri</button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Resim Linki Modalı (sadece UI) */}
+        {showImageModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'grid', placeItems: 'center', zIndex: 2000 }}>
+            <div style={{ width: 'min(900px, 92vw)', background: 'white', color: '#2c3e50', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ padding: 12, background: '#eef3f7', borderBottom: '1px solid #dfe6ee', fontWeight: 700 }}>Stok Resim Linki</div>
+              <div style={{ padding: 12 }}>
+                <input
+                  value={imageUrlDraft}
+                  onChange={(e) => setImageUrlDraft(e.target.value)}
+                  placeholder="-"
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #c8d1dc' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                  <button onClick={() => setShowImageModal(false)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #c8d1dc', background: '#f4f6f8', cursor: 'pointer' }}>Vazgeç</button>
+                  <button
+                    onClick={() => { setImageUrl(imageUrlDraft.trim()); setShowImageModal(false); }}
+                    style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #0aa6b5', background: '#12b3c5', color: 'white', cursor: 'pointer' }}
+                  >
+                    Kaydet
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stok İşlemler */}
         <div style={{ marginTop: 16, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
