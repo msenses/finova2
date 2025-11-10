@@ -20,6 +20,8 @@ export default function StockPage() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [reportsOpen, setReportsOpen] = useState(false);
+  const [scope, setScope] = useState<'name' | 'sku' | 'barcode'>('name');
+  const [balances, setBalances] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let active = true;
@@ -45,6 +47,20 @@ export default function StockPage() {
       } else {
         setRows((data ?? []) as unknown as Product[]);
       }
+
+      // Stok bakiyelerini (giriş-çıkış) hesapla — client tarafında gruplayalım
+      const { data: moves } = await supabase
+        .from('stock_movements')
+        .select('product_id, move_type, qty')
+        .limit(10000);
+      const map: Record<string, number> = {};
+      for (const m of (moves ?? []) as any[]) {
+        const pid = m.product_id as string;
+        const qty = Number(m.qty ?? 0);
+        const sign = m.move_type === 'in' ? 1 : -1;
+        map[pid] = (map[pid] ?? 0) + sign * qty;
+      }
+      setBalances(map);
       setLoading(false);
     };
 
@@ -60,9 +76,11 @@ export default function StockPage() {
     return rows.filter((p) => {
       const name = p.name.toLocaleLowerCase('tr-TR');
       const sku = (p.sku ?? '').toLocaleLowerCase('tr-TR');
-      return name.includes(text) || sku.includes(text);
+      const barcode = ''; // Şimdilik veritabanında yok
+      const haystack = scope === 'name' ? name : scope === 'sku' ? sku : barcode;
+      return haystack.includes(text);
     });
-  }, [rows, q]);
+  }, [rows, q, scope]);
 
   const table = useMemo(() => (
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -70,29 +88,36 @@ export default function StockPage() {
         <tr style={{ background: 'rgba(255,255,255,0.06)' }}>
           <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>#</th>
           <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Kodu</th>
+          <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Barkod</th>
           <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Stok Adı</th>
           <th style={{ textAlign: 'right', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Fiyatı</th>
-          <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Birim</th>
+          <th style={{ textAlign: 'left', padding: 10, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>Bakiye</th>
         </tr>
       </thead>
       <tbody>
-        {filtered.map((p, idx) => (
-          <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            <td style={{ padding: 10, opacity: 0.9 }}>{idx + 1}</td>
-            <td style={{ padding: 10, opacity: 0.9 }}>{p.sku ?? '-'}</td>
-            <td style={{ padding: 10 }}>{p.name}</td>
-            <td style={{ padding: 10, textAlign: 'right' }}>{Number(p.price ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-            <td style={{ padding: 10 }}>{p.unit}</td>
-          </tr>
-        ))}
+        {filtered.map((p, idx) => {
+          const balance = balances[p.id] ?? 0;
+          return (
+            <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <td style={{ padding: 10 }}>
+                <button title="İncele" style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>🔍</button>
+              </td>
+              <td style={{ padding: 10, opacity: 0.9 }}>{p.sku ?? '-'}</td>
+              <td style={{ padding: 10, opacity: 0.9 }}>{'-'}</td>
+              <td style={{ padding: 10 }}>{p.name}</td>
+              <td style={{ padding: 10, textAlign: 'right' }}>{Number(p.price ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+              <td style={{ padding: 10 }}>{`${balance} ${p.unit || 'Adet'}`}</td>
+            </tr>
+          );
+        })}
         {!loading && filtered.length === 0 && (
           <tr>
-            <td colSpan={5} style={{ padding: 12, textAlign: 'center', opacity: 0.8 }}>Kayıt bulunamadı</td>
+            <td colSpan={6} style={{ padding: 12, textAlign: 'center', opacity: 0.8 }}>Kayıt bulunamadı</td>
           </tr>
         )}
       </tbody>
     </table>
-  ), [filtered, loading]);
+  ), [filtered, loading, balances]);
 
   return (
     <main style={{ minHeight: '100dvh', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)', color: 'white' }}>
@@ -126,7 +151,7 @@ export default function StockPage() {
               {reportsOpen && (
                 <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, minWidth: 220, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.15)', background: 'white', color: '#2c3e50', boxShadow: '0 10px 24px rgba(0,0,0,0.2)', zIndex: 10 }}>
                   <button onClick={() => router.push(('/stock/reports/movements') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>🧾 Stok Hareketleri</button>
-                  <button onClick={() => router.push(('/reports') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>🏷️ Stok Etiket Bas</button>
+                  <button onClick={() => router.push(('/stock/reports/labels') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>🏷️ Stok Etiket Bas</button>
                   <button onClick={() => router.push(('/reports') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>📦 Toplu Stok Raporu</button>
                   <button onClick={() => router.push(('/reports') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>📈 Depo Hareket Raporu</button>
                   <button onClick={() => router.push(('/reports') as Route)} style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'transparent', border: 0, cursor: 'pointer' }}>🔁 Depo Aktarım Raporu</button>
@@ -138,16 +163,23 @@ export default function StockPage() {
         </div>
 
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
-          <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>STOK KART LİSTESİ</div>
-
-          <div style={{ display: 'flex', gap: 8, padding: 12, alignItems: 'center' }}>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Ara... (Ad, Kod)"
-              style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}
-            />
-            <button onClick={() => setQ((prev) => prev)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Ara</button>
+          {/* Başlık şeridi + sağda arama */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#12b3c5', color: 'white', padding: '10px 12px', fontWeight: 700, letterSpacing: 0.2 }}>
+            <div style={{ flex: 1 }}>Stok Kart Listesi</div>
+            <select value={scope} onChange={(e) => setScope(e.target.value as any)} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+              <option value="name">Stok Adı</option>
+              <option value="sku">Kodu</option>
+              <option value="barcode">Barkod</option>
+            </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Ara..."
+                style={{ width: 220, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(0,0,0,0.15)', color: 'white' }}
+              />
+              <button onClick={() => setQ((prev) => prev)} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.2)', color: 'white', cursor: 'pointer' }}>🔍</button>
+            </div>
           </div>
 
           <div style={{ padding: 12 }}>
