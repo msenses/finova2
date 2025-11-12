@@ -14,7 +14,10 @@ type Line = {
   name: string;
   qty: number;
   unit_price: number;
-  vat_rate: number;
+  vat_rate: number;     // KDV (%)
+  otv_rate: number;     // ÖTV (%)
+  discount_rate: number;  // İsk.%
+  discount_amount: number; // İsk.TL
 };
 
 export default function InvoiceNewClientPage() {
@@ -29,7 +32,17 @@ export default function InvoiceNewClientPage() {
   const [accountId, setAccountId] = useState<string>(typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('account') ?? ''));
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [lines, setLines] = useState<Line[]>([{ product_id: null, name: '', qty: 1, unit_price: 0, vat_rate: 20 }]);
+  const [lines, setLines] = useState<Line[]>([{
+    product_id: null,
+    name: '',
+    qty: 1,
+    unit_price: 0,
+    vat_rate: 20,
+    otv_rate: 0,
+    discount_rate: 0,
+    discount_amount: 0,
+  }]);
+  const [tevkifatRate, setTevkifatRate] = useState<'YOK' | '10/1' | '5/10'>('YOK');
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const barcodeRef = useRef<HTMLInputElement | null>(null);
@@ -63,15 +76,27 @@ export default function InvoiceNewClientPage() {
   }, [accountId]);
 
   const totals = useMemo(() => {
-    const net = lines.reduce((s, l) => s + l.qty * l.unit_price, 0);
-    const vat = lines.reduce((s, l) => s + (l.qty * l.unit_price * l.vat_rate) / 100, 0);
-    return { net: round2(net), vat: round2(vat), total: round2(net + vat) };
+    const sum = lines.reduce((acc, l) => {
+      const lineNet = l.qty * l.unit_price;
+      const disc = l.discount_amount || (lineNet * (l.discount_rate || 0)) / 100;
+      const netAfterDisc = Math.max(0, lineNet - disc);
+      const vat = (netAfterDisc * (l.vat_rate || 0)) / 100;
+      const otv = (netAfterDisc * (l.otv_rate || 0)) / 100;
+      acc.net += netAfterDisc;
+      acc.vat += vat;
+      acc.otv += otv;
+      return acc;
+    }, { net: 0, vat: 0, otv: 0 });
+    const total = sum.net + sum.vat + sum.otv;
+    return { net: round2(sum.net), vat: round2(sum.vat), otv: round2(sum.otv), total: round2(total) };
   }, [lines]);
 
   const setLine = (idx: number, patch: Partial<Line>) => {
     setLines((prev) => prev.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
   };
-  const addLine = () => setLines((prev) => [...prev, { product_id: null, name: '', qty: 1, unit_price: 0, vat_rate: 20 }]);
+  const addLine = () => setLines((prev) => [...prev, {
+    product_id: null, name: '', qty: 1, unit_price: 0, vat_rate: 20, otv_rate: 0, discount_rate: 0, discount_amount: 0,
+  }]);
   const removeLine = (idx: number) => setLines((prev) => prev.filter((_l, i) => i !== idx));
 
   const onProductSelect = (idx: number, productId: string) => {
@@ -113,7 +138,7 @@ export default function InvoiceNewClientPage() {
         qty: l.qty,
         unit_price: l.unit_price,
         vat_rate: l.vat_rate,
-        line_total: round2(l.qty * l.unit_price + (l.qty * l.unit_price * l.vat_rate) / 100),
+        line_total: round2((l.qty * l.unit_price) - (l.discount_amount || 0) + (((l.qty * l.unit_price) - (l.discount_amount || 0)) * (l.vat_rate || 0)) / 100 + (((l.qty * l.unit_price) - (l.discount_amount || 0)) * (l.otv_rate || 0)) / 100),
       }));
       const { error: itemsErr } = await supabase.from('invoice_items').insert(itemRows);
       if (itemsErr) throw itemsErr;
@@ -201,7 +226,8 @@ export default function InvoiceNewClientPage() {
             <div style={{ padding: 16, borderRadius: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
                 <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Fatura Bilgileri</button>
-                <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(77,116,255,0.4)', background: 'rgba(77,116,255,0.25)', color: 'white' }}>Alış/Satış Ayarları</button>
+                <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Fatura Ek Alanlar</button>
+                <button type="button" style={{ marginLeft: 'auto', padding: '8px 10px', borderRadius: 8, border: '1px solid #1e40af', background: '#1e40af', color: 'white' }}>Alış Satış Ayarları</button>
               </div>
               <div style={{ display: 'grid', gap: 8 }}>
                 <div>
@@ -235,11 +261,12 @@ export default function InvoiceNewClientPage() {
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
                   <tr style={{ textAlign: 'left', color: 'white', opacity: 0.9 }}>
-                    <th style={{ padding: '10px 8px' }}>Ürün</th>
                     <th style={{ padding: '10px 8px' }}>Ad</th>
-                    <th style={{ padding: '10px 8px' }}>Miktar</th>
+                    <th style={{ padding: '10px 8px' }}>Kdv</th>
+                    <th style={{ padding: '10px 8px' }}>Ötv</th>
                     <th style={{ padding: '10px 8px' }}>Birim Fiyat</th>
-                    <th style={{ padding: '10px 8px' }}>KDV %</th>
+                    <th style={{ padding: '10px 8px' }}>Miktar</th>
+                    <th style={{ padding: '10px 8px' }}>Toplam</th>
                     <th style={{ padding: '10px 8px' }}>İsk.%</th>
                     <th style={{ padding: '10px 8px' }}>İsk.TL</th>
                     <th style={{ padding: '10px 8px', textAlign: 'right' }}>G.TOPLAM</th>
@@ -248,35 +275,35 @@ export default function InvoiceNewClientPage() {
                 </thead>
                 <tbody>
                   {lines.map((l, idx) => {
-                    const lineNet = round2(l.qty * l.unit_price);
-                    const lineTotal = round2(lineNet + (lineNet * l.vat_rate) / 100);
+                    const rawNet = l.qty * l.unit_price;
+                    const disc = l.discount_amount || (rawNet * (l.discount_rate || 0)) / 100;
+                    const net = Math.max(0, rawNet - disc);
+                    const lineTotal = round2(net + (net * (l.vat_rate || 0)) / 100 + (net * (l.otv_rate || 0)) / 100);
                     return (
                       <tr key={idx} style={{ color: 'white' }}>
-                        <td style={{ padding: '8px' }}>
-                          <select value={l.product_id ?? ''} onChange={(e) => onProductSelect(idx, e.target.value)} style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
-                            <option value="">Seçin…</option>
-                            {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                          </select>
-                        </td>
                         <td style={{ padding: '8px' }}>
                           <input value={l.name} onChange={(e) => setLine(idx, { name: e.target.value })} placeholder="Satır açıklaması" style={{ width: 220, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                         </td>
                         <td style={{ padding: '8px' }}>
-                          <input type="number" step="0.001" value={l.qty} onChange={(e) => setLine(idx, { qty: parseFloat(e.target.value) || 0 })} style={{ width: 100, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                          <input type="number" step="0.01" value={l.vat_rate} onChange={(e) => setLine(idx, { vat_rate: parseFloat(e.target.value) || 0 })} style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                        </td>
+                        <td style={{ padding: '8px' }}>
+                          <input type="number" step="0.01" value={l.otv_rate} onChange={(e) => setLine(idx, { otv_rate: parseFloat(e.target.value) || 0 })} style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                         </td>
                         <td style={{ padding: '8px' }}>
                           <input type="number" step="0.01" value={l.unit_price} onChange={(e) => setLine(idx, { unit_price: parseFloat(e.target.value) || 0 })} style={{ width: 120, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                         </td>
                         <td style={{ padding: '8px' }}>
-                          <input type="number" step="0.01" value={l.vat_rate} onChange={(e) => setLine(idx, { vat_rate: parseFloat(e.target.value) || 0 })} style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                          <input type="number" step="0.001" value={l.qty} onChange={(e) => setLine(idx, { qty: parseFloat(e.target.value) || 0 })} style={{ width: 100, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                         </td>
-                      <td style={{ padding: '8px' }}>
-                        <input type="number" step="0.01" value={0} disabled style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white', opacity: 0.6 }} />
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        <input type="number" step="0.01" value={0} disabled style={{ width: 100, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white', opacity: 0.6 }} />
-                      </td>
-                      <td style={{ padding: '8px', textAlign: 'right' }}>{lineTotal.toFixed(2)}</td>
+                        <td style={{ padding: '8px' }}>{round2(net).toFixed(2)}</td>
+                        <td style={{ padding: '8px' }}>
+                          <input type="number" step="0.01" value={l.discount_rate} onChange={(e) => setLine(idx, { discount_rate: parseFloat(e.target.value) || 0 })} style={{ width: 80, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                        </td>
+                        <td style={{ padding: '8px' }}>
+                          <input type="number" step="0.01" value={l.discount_amount} onChange={(e) => setLine(idx, { discount_amount: parseFloat(e.target.value) || 0 })} style={{ width: 100, padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                        </td>
+                        <td style={{ padding: '8px', textAlign: 'right' }}>{lineTotal.toFixed(2)}</td>
                         <td style={{ padding: '8px' }}>
                           <button type="button" onClick={() => removeLine(idx)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Sil</button>
                         </td>
@@ -296,7 +323,15 @@ export default function InvoiceNewClientPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>İskonto</span><strong>0.00</strong></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Ara Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>KDV Tutar</span><strong>{totals.vat.toFixed(2)}</strong></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ÖTV Tutar</span><strong>0.00</strong></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ÖTV Tutar</span><strong>{totals.otv.toFixed(2)}</strong></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'center', gap: 8 }}>
+                  <span>Tevkifat Oranı</span>
+                  <select value={tevkifatRate} onChange={(e) => setTevkifatRate(e.target.value as any)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option value="YOK">YOK</option>
+                    <option value="10/1">10/1</option>
+                    <option value="5/10">5/10</option>
+                  </select>
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}><span>G.Toplam</span><strong>{totals.total.toFixed(2)}</strong></div>
               </div>
             </div>
@@ -304,7 +339,7 @@ export default function InvoiceNewClientPage() {
             <div style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', display: 'grid', gap: 10 }}>
               <div>
                 <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Açıklama</div>
-                <input placeholder="Açıklama" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                <textarea rows={3} placeholder="Açıklama" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, alignItems: 'center' }}>
                 <div>
