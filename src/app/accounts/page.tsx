@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchCurrentCompanyId } from '@/lib/company';
 
@@ -16,9 +16,7 @@ type Account = {
 
 export default function AccountsPage() {
   const router = useRouter();
-  const search = useSearchParams();
-  const selectFor = search.get('selectFor');
-  const selectionMode = selectFor === 'sales';
+  const [selectionMode, setSelectionMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Account[]>([]);
   const [q, setQ] = useState('');
@@ -26,6 +24,14 @@ export default function AccountsPage() {
   const [scope, setScope] = useState<'all' | 'debt' | 'credit'>('all');
   const [showReports, setShowReports] = useState(false);
   const reportsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Sadece istemci tarafında arama parametresini oku
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSelectionMode(params.get('selectFor') === 'sales');
+    }
+  }, []);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
