@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchCurrentCompanyId } from '@/lib/company';
 
@@ -16,6 +16,9 @@ type Account = {
 
 export default function AccountsPage() {
   const router = useRouter();
+  const search = useSearchParams();
+  const selectFor = search.get('selectFor');
+  const selectionMode = selectFor === 'sales';
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Account[]>([]);
   const [q, setQ] = useState('');
@@ -103,7 +106,7 @@ export default function AccountsPage() {
           return (
             <tr key={r.id} style={{ color: 'white' }}>
               <td style={{ padding: '8px' }}>
-                <button onClick={() => router.push(`/accounts/${r.id}`)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Cariye Git</button>
+                <button onClick={() => router.push((selectionMode ? `/invoices/new?sales=1&account=${r.id}` : `/accounts/${r.id}`) as any)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>{selectionMode ? 'Seç' : 'Cariye Git'}</button>
               </td>
               <td style={{ padding: '8px' }}>{idx + 1}.</td>
               <td style={{ padding: '8px' }}>{r.name}</td>
@@ -153,7 +156,7 @@ export default function AccountsPage() {
       <section style={{ padding: 16 }}>
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
           {/* Başlık şeridi */}
-          <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>CARI LISTESI</div>
+          <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>{selectionMode ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}</div>
 
           {/* Filtre/Arama Satırı */}
           <div style={{ display: 'flex', gap: 8, padding: 12, alignItems: 'center' }}>
