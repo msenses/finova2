@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { fetchCurrentCompanyId } from '@/lib/company';
@@ -32,6 +32,7 @@ export default function InvoiceNewClientPage() {
   const [lines, setLines] = useState<Line[]>([{ product_id: null, name: '', qty: 1, unit_price: 0, vat_rate: 20 }]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const barcodeRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -51,6 +52,15 @@ export default function InvoiceNewClientPage() {
     };
     init();
   }, [router]);
+
+  useEffect(() => {
+    // Cari seçiminden geldiyse form açıldığında barkod alanına odaklan
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        barcodeRef.current?.focus();
+      }, 50);
+    }
+  }, [accountId]);
 
   const totals = useMemo(() => {
     const net = lines.reduce((s, l) => s + l.qty * l.unit_price, 0);
@@ -216,7 +226,7 @@ export default function InvoiceNewClientPage() {
 
           {/* Barkod ve ürün ekle */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 12 }}>
-            <input placeholder="Barkod..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
+            <input ref={barcodeRef} placeholder="Barkod..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
             <button type="button" onClick={addLine} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', background: '#e85b4a', color: 'white' }}>Ürün Ekle</button>
           </div>
 
