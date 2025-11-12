@@ -88,18 +88,22 @@ export default function AccountsPage() {
     };
   }, [q, scope, page, router]);
 
+  // Satırları inceltmek için seçim modunda daha düşük padding kullan
+  const headPadding = selectionMode ? '8px 8px' : '10px 8px';
+  const cellPadding = selectionMode ? '6px 8px' : '8px';
+
   const table = useMemo(() => (
     <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
       <thead>
         <tr style={{ textAlign: 'left', color: 'white', opacity: 0.9 }}>
-          <th style={{ padding: '10px 8px' }}>İşlem</th>
-          {!selectionMode && <th style={{ padding: '10px 8px', width: 40 }}>#</th>}
-          <th style={{ padding: '10px 8px' }}>{selectionMode ? 'Ünvan' : 'Cari Adı'}</th>
-          <th style={{ padding: '10px 8px' }}>Yetkili</th>
-          {!selectionMode && <th style={{ padding: '10px 8px' }}>Sabit Telefon</th>}
-          {!selectionMode && <th style={{ padding: '10px 8px' }}>Cep Telefon</th>}
-          {!selectionMode && <th style={{ padding: '10px 8px', textAlign: 'right' }}>Bakiye</th>}
-          {!selectionMode && <th style={{ padding: '10px 8px' }}>Düzenle</th>}
+          <th style={{ padding: headPadding }}>İşlem</th>
+          {!selectionMode && <th style={{ padding: headPadding, width: 40 }}>#</th>}
+          <th style={{ padding: headPadding }}>{selectionMode ? 'Ünvan' : 'Cari Adı'}</th>
+          <th style={{ padding: headPadding }}>Yetkili</th>
+          {!selectionMode && <th style={{ padding: headPadding }}>Sabit Telefon</th>}
+          {!selectionMode && <th style={{ padding: headPadding }}>Cep Telefon</th>}
+          {!selectionMode && <th style={{ padding: headPadding, textAlign: 'right' }}>Bakiye</th>}
+          {!selectionMode && <th style={{ padding: headPadding }}>Düzenle</th>}
         </tr>
       </thead>
       <tbody>
@@ -116,21 +120,21 @@ export default function AccountsPage() {
           } as React.CSSProperties;
           return (
             <tr key={r.id} style={{ color: 'white' }}>
-              <td style={{ padding: '8px' }}>
+              <td style={{ padding: cellPadding }}>
                 <button onClick={() => router.push((selectionMode ? `/invoices/new?sales=1&account=${r.id}` : `/accounts/${r.id}`) as any)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>{selectionMode ? 'Seç' : 'Cariye Git'}</button>
               </td>
-              {!selectionMode && <td style={{ padding: '8px' }}>{idx + 1}.</td>}
-              <td style={{ padding: '8px' }}>{r.name}</td>
-              <td style={{ padding: '8px' }}>{'-'}</td>
-              {!selectionMode && <td style={{ padding: '8px' }}>{r.phone ?? '-'}</td>}
-              {!selectionMode && <td style={{ padding: '8px' }}>{'-'}</td>}
+              {!selectionMode && <td style={{ padding: cellPadding }}>{idx + 1}.</td>}
+              <td style={{ padding: cellPadding }}>{r.name}</td>
+              <td style={{ padding: cellPadding }}>{'-'}</td>
+              {!selectionMode && <td style={{ padding: cellPadding }}>{r.phone ?? '-'}</td>}
+              {!selectionMode && <td style={{ padding: cellPadding }}>{'-'}</td>}
               {!selectionMode && (
-                <td style={{ padding: '8px', textAlign: 'right' }}>
+                <td style={{ padding: cellPadding, textAlign: 'right' }}>
                   <span style={badgeStyle}>{formatMoney(Math.abs(balance))} {isCredit ? '(A)' : ''}</span>
                 </td>
               )}
               {!selectionMode && (
-                <td style={{ padding: '8px' }}>
+                <td style={{ padding: cellPadding }}>
                   <button onClick={() => router.push(`/accounts/${r.id}/edit`)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Düzenle</button>
                 </td>
               )}
@@ -151,20 +155,24 @@ export default function AccountsPage() {
       {/* Üst Araç Çubuğu */}
       <div style={{ padding: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
         <button onClick={() => router.push('/accounts/new')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#e74c3c', color: 'white', cursor: 'pointer' }}>+Yeni Cari</button>
-        <button onClick={() => router.push('/accounts/groups')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#3498db', color: 'white', cursor: 'pointer' }}>Gruplar</button>
-        <div ref={reportsRef} style={{ position: 'relative' }}>
-          <button onClick={() => setShowReports((s) => !s)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#d4a40c', color: 'white', cursor: 'pointer' }}>Raporlar ▾</button>
-          {showReports && (
-            <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, minWidth: 220, background: 'white', color: '#333', borderRadius: 8, boxShadow: '0 10px 28px rgba(0,0,0,0.25)', padding: 6, zIndex: 1500 }}>
-              <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-ekstre'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Ekstre</button>
-              <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-islem'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari İşlem Raporu</button>
-              <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-rapor'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Rapor</button>
-              <button onClick={() => { setShowReports(false); router.push('/reports?type=babs'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ BA-BS raporu</button>
-              <button onClick={() => { setShowReports(false); router.push('/reports?type=mutabakat'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Mutabakat Raporu</button>
+        {!selectionMode && (
+          <>
+            <button onClick={() => router.push('/accounts/groups')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#3498db', color: 'white', cursor: 'pointer' }}>Gruplar</button>
+            <div ref={reportsRef} style={{ position: 'relative' }}>
+              <button onClick={() => setShowReports((s) => !s)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#d4a40c', color: 'white', cursor: 'pointer' }}>Raporlar ▾</button>
+              {showReports && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, minWidth: 220, background: 'white', color: '#333', borderRadius: 8, boxShadow: '0 10px 28px rgba(0,0,0,0.25)', padding: 6, zIndex: 1500 }}>
+                  <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-ekstre'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Ekstre</button>
+                  <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-islem'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari İşlem Raporu</button>
+                  <button onClick={() => { setShowReports(false); router.push('/reports?type=cari-rapor'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Rapor</button>
+                  <button onClick={() => { setShowReports(false); router.push('/reports?type=babs'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ BA-BS raporu</button>
+                  <button onClick={() => { setShowReports(false); router.push('/reports?type=mutabakat'); }} style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer' }}>≡ Cari Mutabakat Raporu</button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <button onClick={() => router.push('/cash')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#16a085', color: 'white', cursor: 'pointer' }}>Mahsup fişi</button>
+            <button onClick={() => router.push('/cash')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: '#16a085', color: 'white', cursor: 'pointer' }}>Mahsup fişi</button>
+          </>
+        )}
       </div>
 
       {/* Cari Listesi Paneli */}
