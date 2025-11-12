@@ -22,6 +22,9 @@ export default function AccountsPage() {
   const [q, setQ] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [scope, setScope] = useState<'all' | 'debt' | 'credit'>('all');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [totalRows, setTotalRows] = useState(0);
   const [showReports, setShowReports] = useState(false);
   const reportsRef = useRef<HTMLDivElement | null>(null);
 
@@ -54,9 +57,8 @@ export default function AccountsPage() {
       }
       const query = supabase
         .from('accounts')
-        .select('id, code, name, phone, email, balance')
-        .order('name', { ascending: true })
-        .limit(50);
+        .select('id, code, name, phone, email, balance', { count: 'exact' })
+        .order('name', { ascending: true });
       if (q.trim()) {
         // Basit arama: name ilike veya code ilike
         // Supabase'de text search icin or kullanimi
@@ -68,33 +70,36 @@ export default function AccountsPage() {
       } else if (scope === 'credit') {
         query.lt('balance', 0);
       }
-      const { data, error } = await query;
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize - 1;
+      const { data, error, count } = await query.range(start, end);
       if (!active) return;
       if (error) {
         setRows([]);
       } else {
         setRows((data ?? []) as unknown as Account[]);
       }
+      setTotalRows(count ?? 0);
       setLoading(false);
     };
     load();
     return () => {
       active = false;
     };
-  }, [q, scope, router]);
+  }, [q, scope, page, router]);
 
   const table = useMemo(() => (
     <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
       <thead>
         <tr style={{ textAlign: 'left', color: 'white', opacity: 0.9 }}>
           <th style={{ padding: '10px 8px' }}>İşlem</th>
-          <th style={{ padding: '10px 8px', width: 40 }}>#</th>
-          <th style={{ padding: '10px 8px' }}>Cari Adı</th>
+          {!selectionMode && <th style={{ padding: '10px 8px', width: 40 }}>#</th>}
+          <th style={{ padding: '10px 8px' }}>{selectionMode ? 'Ünvan' : 'Cari Adı'}</th>
           <th style={{ padding: '10px 8px' }}>Yetkili</th>
-          <th style={{ padding: '10px 8px' }}>Sabit Telefon</th>
-          <th style={{ padding: '10px 8px' }}>Cep Telefon</th>
-          <th style={{ padding: '10px 8px', textAlign: 'right' }}>Bakiye</th>
-          <th style={{ padding: '10px 8px' }}>Düzenle</th>
+          {!selectionMode && <th style={{ padding: '10px 8px' }}>Sabit Telefon</th>}
+          {!selectionMode && <th style={{ padding: '10px 8px' }}>Cep Telefon</th>}
+          {!selectionMode && <th style={{ padding: '10px 8px', textAlign: 'right' }}>Bakiye</th>}
+          {!selectionMode && <th style={{ padding: '10px 8px' }}>Düzenle</th>}
         </tr>
       </thead>
       <tbody>
@@ -114,17 +119,21 @@ export default function AccountsPage() {
               <td style={{ padding: '8px' }}>
                 <button onClick={() => router.push((selectionMode ? `/invoices/new?sales=1&account=${r.id}` : `/accounts/${r.id}`) as any)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>{selectionMode ? 'Seç' : 'Cariye Git'}</button>
               </td>
-              <td style={{ padding: '8px' }}>{idx + 1}.</td>
+              {!selectionMode && <td style={{ padding: '8px' }}>{idx + 1}.</td>}
               <td style={{ padding: '8px' }}>{r.name}</td>
               <td style={{ padding: '8px' }}>{'-'}</td>
-              <td style={{ padding: '8px' }}>{r.phone ?? '-'}</td>
-              <td style={{ padding: '8px' }}>{'-'}</td>
-              <td style={{ padding: '8px', textAlign: 'right' }}>
-                <span style={badgeStyle}>{formatMoney(Math.abs(balance))} {isCredit ? '(A)' : ''}</span>
-              </td>
-              <td style={{ padding: '8px' }}>
-                <button onClick={() => router.push(`/accounts/${r.id}/edit`)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Düzenle</button>
-              </td>
+              {!selectionMode && <td style={{ padding: '8px' }}>{r.phone ?? '-'}</td>}
+              {!selectionMode && <td style={{ padding: '8px' }}>{'-'}</td>}
+              {!selectionMode && (
+                <td style={{ padding: '8px', textAlign: 'right' }}>
+                  <span style={badgeStyle}>{formatMoney(Math.abs(balance))} {isCredit ? '(A)' : ''}</span>
+                </td>
+              )}
+              {!selectionMode && (
+                <td style={{ padding: '8px' }}>
+                  <button onClick={() => router.push(`/accounts/${r.id}/edit`)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>Düzenle</button>
+                </td>
+              )}
             </tr>
           );
         })}
@@ -135,7 +144,7 @@ export default function AccountsPage() {
         )}
       </tbody>
     </table>
-  ), [rows, router, loading]);
+  ), [rows, router, loading, selectionMode]);
 
   return (
     <main style={{ minHeight: '100dvh', color: 'white' }}>
@@ -178,6 +187,26 @@ export default function AccountsPage() {
           {/* Tablo */}
           <div style={{ padding: 12 }}>
             {loading ? 'Yükleniyor…' : table}
+          </div>
+
+          {/* Sayfalama */}
+          <div style={{ padding: '0 12px 12px', display: 'flex', justifyContent: 'center', gap: 6 }}>
+            {(() => {
+              const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+              const goFirst = () => setPage(1);
+              const goPrev = () => setPage((p) => Math.max(1, p - 1));
+              const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
+              const goLast = () => setPage(totalPages);
+              return (
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <button onClick={goFirst} disabled={page <= 1} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>{'«'}</button>
+                  <button onClick={goPrev} disabled={page <= 1} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>{'‹'}</button>
+                  <span style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: '#1ea7fd', color: 'white' }}>{page}</span>
+                  <button onClick={goNext} disabled={page >= totalPages} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>{'›'}</button>
+                  <button onClick={goLast} disabled={page >= totalPages} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', cursor: 'pointer' }}>{'»'}</button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
