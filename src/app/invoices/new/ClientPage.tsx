@@ -63,6 +63,33 @@ export default function InvoiceNewClientPage() {
   const [loading, setLoading] = useState(false);
   const barcodeRef = useRef<HTMLInputElement | null>(null);
 
+  // Ürün ekleme paneli (görseldeki satır editörü)
+  const [showAddPanel, setShowAddPanel] = useState(false);
+  const [draftProductId, setDraftProductId] = useState<string | ''>('');
+  const [draftName, setDraftName] = useState('');
+  const [draftQty, setDraftQty] = useState<number>(1);
+  const [draftUnit, setDraftUnit] = useState<string>('');
+  const [draftUnitPrice, setDraftUnitPrice] = useState<number>(0);
+  const [draftVatRate, setDraftVatRate] = useState<number>(0);
+  const [draftVatIncl, setDraftVatIncl] = useState<'excluded' | 'included'>('excluded');
+  const [draftDiscRate, setDraftDiscRate] = useState<number>(0);
+  const [draftDiscAmount, setDraftDiscAmount] = useState<number>(0);
+  const [draftOtvRate, setDraftOtvRate] = useState<number>(0);
+  const [draftOtvIncl, setDraftOtvIncl] = useState<'excluded' | 'included'>('excluded');
+
+  const draftTotals = useMemo(() => {
+    const qty = Number(draftQty || 0);
+    let netUnit = Number(draftUnitPrice || 0);
+    if (draftVatIncl === 'included' && draftVatRate > 0) netUnit = netUnit / (1 + draftVatRate / 100);
+    if (draftOtvIncl === 'included' && draftOtvRate > 0) netUnit = netUnit / (1 + draftOtvRate / 100);
+    const grossNet = qty * netUnit;
+    const disc = draftDiscAmount || (grossNet * (draftDiscRate || 0)) / 100;
+    const netAfterDisc = Math.max(0, grossNet - disc);
+    const vat = (netAfterDisc * (draftVatRate || 0)) / 100;
+    const otv = (netAfterDisc * (draftOtvRate || 0)) / 100;
+    return { net: round2(netAfterDisc), total: round2(netAfterDisc + vat + otv) };
+  }, [draftQty, draftUnitPrice, draftVatIncl, draftVatRate, draftOtvIncl, draftOtvRate, draftDiscAmount, draftDiscRate]);
+
   useEffect(() => {
     const init = async () => {
       const { data } = await supabase.auth.getSession();
@@ -132,6 +159,46 @@ export default function InvoiceNewClientPage() {
     } else {
       setLine(idx, { product_id: null });
     }
+  };
+  const onDraftProductPick = (productId: string) => {
+    setDraftProductId(productId);
+    const p = products.find((x) => x.id === productId);
+    if (p) {
+      setDraftName(p.name);
+      setDraftUnitPrice(Number(p.price ?? 0));
+      setDraftVatRate(Number(p.vat_rate ?? 0));
+      setDraftUnit(p.unit ?? '');
+    }
+  };
+  const commitDraft = () => {
+    setLines((prev) => [...prev, {
+      product_id: draftProductId || null,
+      name: draftName.trim(),
+      qty: Number(draftQty || 0),
+      unit_price: (() => {
+        let netUnit = Number(draftUnitPrice || 0);
+        if (draftVatIncl === 'included' && draftVatRate > 0) netUnit = netUnit / (1 + draftVatRate / 100);
+        if (draftOtvIncl === 'included' && draftOtvRate > 0) netUnit = netUnit / (1 + draftOtvRate / 100);
+        return round2(netUnit);
+      })(),
+      vat_rate: Number(draftVatRate || 0),
+      otv_rate: Number(draftOtvRate || 0),
+      discount_rate: Number(draftDiscRate || 0),
+      discount_amount: Number(draftDiscAmount || 0),
+    }]);
+    // reset
+    setDraftProductId('');
+    setDraftName('');
+    setDraftQty(1);
+    setDraftUnit('');
+    setDraftUnitPrice(0);
+    setDraftVatRate(0);
+    setDraftVatIncl('excluded');
+    setDraftDiscRate(0);
+    setDraftDiscAmount(0);
+    setDraftOtvRate(0);
+    setDraftOtvIncl('excluded');
+    setShowAddPanel(false);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -304,8 +371,72 @@ export default function InvoiceNewClientPage() {
           {/* Barkod ve ürün ekle */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px', gap: 12 }}>
             <input ref={barcodeRef} placeholder="Barkod..." style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
-            <button type="button" onClick={addLine} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', background: '#e85b4a', color: 'white' }}>Ürün Ekle</button>
+            <button type="button" onClick={() => setShowAddPanel(true)} style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', background: '#e85b4a', color: 'white' }}>Ürün Ekle</button>
           </div>
+
+          {showAddPanel && (
+            <div style={{ marginTop: 8, padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.7fr 0.9fr 0.9fr 0.7fr 0.9fr 0.9fr 0.9fr 0.9fr 0.9fr 0.9fr 0.9fr', gap: 8, alignItems: 'end' }}>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Ürün/Hizmet</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Miktar</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Birim</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Birim Fiyat</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Kdv</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Kdv Durumu</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>İskonto (%)</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>İskonto (TL)</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Ötv</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Ötv Durumu</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Toplam</div>
+                <div style={{ fontSize: 12, opacity: 0.85 }}>Genel Toplam</div>
+
+                {/* Ürün */}
+                <div>
+                  <select value={draftProductId} onChange={(e) => onDraftProductPick(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                    <option value="">—</option>
+                    {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                  <input value={draftName} onChange={(e) => setDraftName(e.target.value)} placeholder="Açıklama" style={{ marginTop: 6, width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                </div>
+                {/* Miktar */}
+                <input type="number" step="0.001" value={draftQty} onChange={(e) => setDraftQty(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* Birim */}
+                <input value={draftUnit} onChange={(e) => setDraftUnit(e.target.value)} placeholder="Birim Seçiniz…" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* Birim Fiyat */}
+                <input type="number" step="0.01" value={draftUnitPrice} onChange={(e) => setDraftUnitPrice(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* KDV */}
+                <input type="number" step="0.01" value={draftVatRate} onChange={(e) => setDraftVatRate(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* KDV Durumu */}
+                <select value={draftVatIncl} onChange={(e) => setDraftVatIncl(e.target.value as any)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                  <option value="excluded">Kdv Hariç</option>
+                  <option value="included">Kdv Dahil</option>
+                </select>
+                {/* İskonto (%) */}
+                <input type="number" step="0.01" value={draftDiscRate} onChange={(e) => setDraftDiscRate(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* İskonto (TL) */}
+                <input type="number" step="0.01" value={draftDiscAmount} onChange={(e) => setDraftDiscAmount(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* ÖTV */}
+                <input type="number" step="0.01" value={draftOtvRate} onChange={(e) => setDraftOtvRate(parseFloat(e.target.value) || 0)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                {/* ÖTV Durumu */}
+                <select value={draftOtvIncl} onChange={(e) => setDraftOtvIncl(e.target.value as any)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
+                  <option value="excluded">Ötv Hariç</option>
+                  <option value="included">Ötv Dahil</option>
+                </select>
+                {/* Toplam */}
+                <input readOnly value={draftTotals.net.toFixed(2)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
+                {/* Genel Toplam */}
+                <input readOnly value={draftTotals.total.toFixed(2)} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', color: 'white' }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+                <button type="button" onClick={() => { const el = document.querySelector('select'); (el as HTMLSelectElement | null)?.focus(); }} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #22b8cf', background: '#22b8cf', color: 'white' }}>Stok Bul</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={() => setShowAddPanel(false)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Vazgeç</button>
+                  <button type="button" onClick={commitDraft} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #22b8cf', background: '#22b8cf', color: 'white' }}>Ekle</button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Satır tablosu */}
           <div style={{ overflowX: 'auto' }}>
