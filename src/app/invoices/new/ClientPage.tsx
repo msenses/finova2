@@ -43,6 +43,19 @@ export default function InvoiceNewClientPage() {
     discount_amount: 0,
   }]);
   const [tevkifatRate, setTevkifatRate] = useState<'YOK' | '10/1' | '5/10'>('YOK');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [settings, setSettings] = useState({
+    defaultAccountId: '' as string | null,
+    defaultPayment: 'Nakit',
+    openNewAfterSave: false,
+    printInvoiceAfterSave: false,
+    printReceiptAfterSave: false,
+    printInfoSlipAfterSave: false,
+    printStockOnSameRow: false,
+    fetchLastPrice: false,
+    eInvoiceActive: false,
+  });
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const barcodeRef = useRef<HTMLInputElement | null>(null);
@@ -65,6 +78,16 @@ export default function InvoiceNewClientPage() {
     };
     init();
   }, [router]);
+
+  useEffect(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('saleSettings') : null;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setSettings((s) => ({ ...s, ...parsed }));
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     // Cari seçiminden geldiyse form açıldığında barkod alanına odaklan
@@ -227,7 +250,7 @@ export default function InvoiceNewClientPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
                 <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Fatura Bilgileri</button>
                 <button type="button" style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>Fatura Ek Alanlar</button>
-                <button type="button" style={{ marginLeft: 'auto', padding: '8px 10px', borderRadius: 8, border: '1px solid #1e40af', background: '#1e40af', color: 'white' }}>Alış Satış Ayarları</button>
+                <button type="button" onClick={() => setShowSettings(true)} style={{ marginLeft: 'auto', padding: '8px 10px', borderRadius: 8, border: '1px solid #1e40af', background: '#1e40af', color: 'white' }}>Alış Satış Ayarları</button>
               </div>
               <div style={{ display: 'grid', gap: 8 }}>
                 <div>
@@ -379,6 +402,55 @@ export default function InvoiceNewClientPage() {
           {err && <div style={{ color: '#ffb4b4' }}>{err}</div>}
         </form>
       </section>
+
+      {showSettings && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'grid', placeItems: 'center', zIndex: 1000 }} onClick={() => setShowSettings(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 720, maxWidth: '95%', background: '#ffffff', color: '#111827', borderRadius: 8, boxShadow: '0 16px 40px rgba(0,0,0,0.35)' }}>
+            <div style={{ padding: 12, borderBottom: '1px solid #e5e7eb', fontWeight: 700 }}>Alış Satış Ayarları</div>
+            <div style={{ padding: 12, display: 'grid', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Varsayılan cari seçimi</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 8 }}>
+                  <input readOnly value={settings.defaultAccountId ? (accounts.find((a) => a.id === settings.defaultAccountId)?.name ?? '') : 'Henüz seçilmiş bir varsayılan cari yok'} style={{ width: '100%', padding: '8px 10px', borderRadius: 4, border: '1px solid #cfd4dc', background: '#fff' }} />
+                  <button type="button" onClick={() => setShowAccountPicker((s) => !s)} style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #1d4ed8', background: '#1d4ed8', color: '#fff' }}>Cari Bul</button>
+                  <button type="button" onClick={() => setSettings((s) => ({ ...s, defaultAccountId: '' }))} style={{ padding: '8px 10px', borderRadius: 4, border: 'none', background: 'transparent', color: '#6b7280' }}>Temizle</button>
+                </div>
+                {showAccountPicker && (
+                  <div style={{ marginTop: 6, border: '1px solid #e5e7eb', borderRadius: 6, maxHeight: 220, overflow: 'auto' }}>
+                    {accounts.map((a) => (
+                      <button key={a.id} type="button" onClick={() => { setSettings((s) => ({ ...s, defaultAccountId: a.id })); setShowAccountPicker(false); }} style={{ width: '100%', textAlign: 'left', padding: 8, border: 'none', background: 'white', cursor: 'pointer' }}>{a.name}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Varsayılan ödeme şekli</div>
+                <select value={settings.defaultPayment} onChange={(e) => setSettings((s) => ({ ...s, defaultPayment: e.target.value }))} style={{ width: 260, padding: '8px 10px', borderRadius: 4, border: '1px solid #cfd4dc', background: '#fff' }}>
+                  <option value="Nakit">Nakit</option>
+                  <option value="Havale">Havale</option>
+                  <option value="Kredi Kartı">Kredi Kartı</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.openNewAfterSave} onChange={(e) => setSettings((s) => ({ ...s, openNewAfterSave: e.target.checked }))} />Kaydettikten sonra yeni satış faturası aç.</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.printInvoiceAfterSave} onChange={(e) => setSettings((s) => ({ ...s, printInvoiceAfterSave: e.target.checked }))} />Kaydettikten sonra fatura yazdır.</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.printReceiptAfterSave} onChange={(e) => setSettings((s) => ({ ...s, printReceiptAfterSave: e.target.checked }))} />Kaydettikten sonra makbuz yazdır.</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.printInfoSlipAfterSave} onChange={(e) => setSettings((s) => ({ ...s, printInfoSlipAfterSave: e.target.checked }))} />Kaydettikten sonra bilgi fişi yazdır.</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.printStockOnSameRow} onChange={(e) => setSettings((s) => ({ ...s, printStockOnSameRow: e.target.checked }))} />Aynı satırda ayrıca stok yazdır.</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.fetchLastPrice} onChange={(e) => setSettings((s) => ({ ...s, fetchLastPrice: e.target.checked }))} />Stok son fiyatı getir</label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}><input type="checkbox" checked={settings.eInvoiceActive} onChange={(e) => setSettings((s) => ({ ...s, eInvoiceActive: e.target.checked }))} />EFatura Seçeneği Aktif</label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button type="button" onClick={() => setShowSettings(false)} style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #e5e7eb', background: '#f3f4f6' }}>Kapat</button>
+                <button type="button" onClick={() => { try { localStorage.setItem('saleSettings', JSON.stringify(settings)); } catch {}; setShowSettings(false); }} style={{ padding: '8px 12px', borderRadius: 4, border: '1px solid #2563eb', background: '#2563eb', color: '#fff' }}>Ayarları Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
