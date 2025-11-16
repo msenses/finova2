@@ -377,7 +377,7 @@ export default function InvoiceNewClientPage() {
                 <button type="button" onClick={() => setShowSettings(true)} style={{ marginLeft: 'auto', padding: '8px 10px', borderRadius: 8, border: '1px solid #1e40af', background: '#1e40af', color: 'white' }}>Alış Satış Ayarları</button>
               </div>
               {invoiceTab === 'info' ? (
-                <div style={{ display: 'grid', gap: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <div>
                     <div style={{ fontSize: 12, opacity: 0.8 }}>Fatura Tarihi</div>
                     <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
@@ -388,19 +388,24 @@ export default function InvoiceNewClientPage() {
                   </div>
                   <div>
                     <div style={{ fontSize: 12, opacity: 0.8 }}>Saat</div>
-                    <input type="time" defaultValue="13:43" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                    <input type="time" defaultValue="12:52" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
                   </div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={applyAvgCostToStocks} onChange={(e) => setApplyAvgCostToStocks(e.target.checked)} />
-                    Maliyet Ortalamasını Stoklara İşle
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="checkbox" checked={applyPurchasePriceToStocks} onChange={(e) => setApplyPurchasePriceToStocks(e.target.checked)} />
-                    Alış Fiyatını Stoklara İşle
-                  </label>
                   <div>
                     <div style={{ fontSize: 12, opacity: 0.8 }}>Fatura No</div>
-                    <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} placeholder="Otomatik" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} placeholder="Otomatik" style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }} />
+                      <button type="button" title="Yeni numara üret" style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.12)', color: 'white' }}>+</button>
+                    </div>
+                  </div>
+                  <div style={{ gridColumn: '1 / span 1', display: 'grid', gap: 6, marginTop: 4 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={applyAvgCostToStocks} onChange={(e) => setApplyAvgCostToStocks(e.target.checked)} />
+                      Maliyet Ortalamasını Stoklara İşle
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={applyPurchasePriceToStocks} onChange={(e) => setApplyPurchasePriceToStocks(e.target.checked)} />
+                      Alış Fiyatını Stoklara İşle
+                    </label>
                   </div>
                 </div>
               ) : (
@@ -591,22 +596,24 @@ export default function InvoiceNewClientPage() {
 
           {/* Alt blok: Tutarlar/Müstahsil/Toplu İskonto + Açıklama/Ödeme */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', display: 'grid', gap: 10 }}>
-              {/* Tabs */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button type="button" onClick={() => setBottomTab('totals')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: bottomTab === 'totals' ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.12)', color: 'white' }}>Tutarlar</button>
-                <button type="button" onClick={() => setBottomTab('mustahsil')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: bottomTab === 'mustahsil' ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.12)', color: 'white' }}>Müstahsil Ek Alan</button>
-                <button type="button" onClick={() => setBottomTab('bulk')} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: bottomTab === 'bulk' ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.12)', color: 'white' }}>Toplu İskonto</button>
+            <div style={{ padding: 0, borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', display: 'grid' }}>
+              {/* Tabs - üst şerit */}
+              <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+                <button type="button" onClick={() => setBottomTab('totals')} style={{ padding: '10px 12px', border: 'none', background: bottomTab === 'totals' ? 'rgba(255,255,255,0.12)' : 'transparent', color: 'white', cursor: 'pointer' }}>Tutarlar</button>
+                <button type="button" onClick={() => setBottomTab('mustahsil')} style={{ padding: '10px 12px', border: 'none', background: bottomTab === 'mustahsil' ? 'rgba(255,255,255,0.12)' : 'transparent', color: 'white', cursor: 'pointer' }}>Müstahsil Ek Alan</button>
+                <div style={{ marginLeft: 'auto', display: 'flex' }}>
+                  <button type="button" onClick={() => setBottomTab('bulk')} style={{ padding: '10px 12px', border: 'none', background: bottomTab === 'bulk' ? 'rgba(255,255,255,0.12)' : 'transparent', color: 'white', cursor: 'pointer' }}>Toplu İskonto</button>
+                </div>
               </div>
 
               {bottomTab === 'totals' && (
-                <div style={{ display: 'grid', gap: 6 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>İskonto</span><strong>0.00</strong></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Ara Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>KDV Tutar</span><strong>{totals.vat.toFixed(2)}</strong></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ÖTV Tutar</span><strong>{totals.otv.toFixed(2)}</strong></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'grid', gap: 0, padding: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}><span>Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}><span>İskonto</span><strong>0.00</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}><span>Ara Toplam</span><strong>{totals.net.toFixed(2)}</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}><span>Kdv Tutar</span><strong>{totals.vat.toFixed(2)}</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}><span>Ötv Tutar</span><strong>{totals.otv.toFixed(2)}</strong></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <span>Tevkifat Oranı</span>
                     <select value={tevkifatRate} onChange={(e) => setTevkifatRate(e.target.value as any)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(0,0,0,0.15)', color: 'white' }}>
                       <option value="YOK">YOK</option>
@@ -614,7 +621,7 @@ export default function InvoiceNewClientPage() {
                       <option value="5/10">5/10</option>
                     </select>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}><span>G.Toplam</span><strong>{totals.total.toFixed(2)}</strong></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}><span>G.Toplam</span><strong>{totals.total.toFixed(2)}</strong></div>
                 </div>
               )}
 
