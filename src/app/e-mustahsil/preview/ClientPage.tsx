@@ -40,7 +40,7 @@ export default function EMustahsilPreviewClientPage() {
   return (
     <main style={{ minHeight: '100dvh', background: 'linear-gradient(135deg,#0b2161,#0e3aa3)', color: 'white' }}>
       <header style={{ padding: 16, display: 'flex', gap: 8 }}>
-        <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #16a085', background: '#16a085', color: 'white' }}>Makbuz Bas</button>
+        <button onClick={() => router.push((`/e-mustahsil/receipt?account=${accountId}`) as any)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #16a085', background: '#16a085', color: 'white' }}>Makbuz Bas</button>
         <button style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #2980b9', background: '#2980b9', color: 'white' }}>Müstahsil Yazdır</button>
       </header>
 
