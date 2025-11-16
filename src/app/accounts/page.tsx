@@ -134,9 +134,7 @@ export default function AccountsPage() {
                     } else if (selectionFor === 'purchase') {
                       router.push((`/invoices/new?purchase=1&account=${r.id}`) as any);
                     } else if (selectionFor === 'dispatch') {
-                      // İleride irsaliye oluşturma sayfası eklendiğinde burası güncellenecek
-                      // Şimdilik sadece seçim ekranı hedefleniyor; kullanıcı isterse cari detaya gidebilir
-                      router.push((`/accounts/${r.id}`) as any);
+                      router.push((`/dispatch/new?sales=1&account=${r.id}`) as any);
                     } else {
                       router.push((`/accounts/${r.id}`) as any);
                     }
