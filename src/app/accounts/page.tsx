@@ -16,7 +16,7 @@ type Account = {
 
 export default function AccountsPage() {
   const router = useRouter();
-  const [selectionFor, setSelectionFor] = useState<'sales' | 'purchase' | 'dispatch' | null>(null);
+  const [selectionFor, setSelectionFor] = useState<'sales' | 'purchase' | 'dispatch' | 'dispatch_purchase' | 'sales_return' | 'purchase_return' | 'emustahsil' | null>(null);
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Account[]>([]);
   const [q, setQ] = useState('');
@@ -33,7 +33,7 @@ export default function AccountsPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const p = params.get('selectFor');
-      if (p === 'sales' || p === 'purchase' || p === 'dispatch') {
+      if (p === 'sales' || p === 'purchase' || p === 'dispatch' || p === 'dispatch_purchase' || p === 'sales_return' || p === 'purchase_return' || p === 'emustahsil') {
         setSelectionFor(p);
       } else {
         setSelectionFor(null);
@@ -135,6 +135,14 @@ export default function AccountsPage() {
                       router.push((`/invoices/new?purchase=1&account=${r.id}`) as any);
                     } else if (selectionFor === 'dispatch') {
                       router.push((`/dispatch/new?sales=1&account=${r.id}`) as any);
+                    } else if (selectionFor === 'dispatch_purchase') {
+                      router.push((`/dispatch/new?purchase=1&account=${r.id}`) as any);
+                    } else if (selectionFor === 'sales_return') {
+                      router.push((`/returns/sales/new?account=${r.id}`) as any);
+                    } else if (selectionFor === 'purchase_return') {
+                      router.push((`/returns/purchase/new?account=${r.id}`) as any);
+                    } else if (selectionFor === 'emustahsil') {
+                      router.push((`/accounts/${r.id}`) as any);
                     } else {
                       router.push((`/accounts/${r.id}`) as any);
                     }
@@ -201,7 +209,21 @@ export default function AccountsPage() {
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
           {/* Başlık şeridi */}
           <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>
-            {selectionFor === 'sales' ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'purchase' ? 'ALIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'dispatch' ? 'İRSALİYE YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}
+            {selectionFor === 'sales'
+              ? 'SATIŞ YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'purchase'
+              ? 'ALIŞ YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'dispatch'
+              ? 'İRSALİYE YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'dispatch_purchase'
+              ? 'ALIŞ İRSALİYESİ YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'sales_return'
+              ? 'SATIŞ İADE YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'purchase_return'
+              ? 'ALIŞ İADE YAPILACAK CARİ SEÇİMİ'
+              : selectionFor === 'emustahsil'
+              ? 'E-MÜSTAHSİL CARİ SEÇİMİ'
+              : 'CARI LISTESI'}
           </div>
 
           {/* Filtre/Arama Satırı */}

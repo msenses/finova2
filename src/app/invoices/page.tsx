@@ -125,11 +125,14 @@ export default function InvoicesPage() {
           <button onClick={() => router.push('/invoices/new?sales=1')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: '#e74c3c', color: 'white', cursor: 'pointer' }}>Yeni Satış Faturası</button>
           <button onClick={() => router.push('/accounts?selectFor=purchase')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #1abc9c', background: '#1abc9c', color: 'white', cursor: 'pointer' }}>Yeni Alış Faturası</button>
           <button onClick={() => router.push('/accounts?selectFor=dispatch')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #bdc3c7', background: '#bdc3c7', color: '#2c3e50', cursor: 'pointer' }}>Satış İrsaliyesi</button>
+          <button onClick={() => router.push('/accounts?selectFor=dispatch_purchase')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #95a5a6', background: '#95a5a6', color: '#2c3e50', cursor: 'pointer' }}>Alış İrsaliyesi</button>
+          <button onClick={() => router.push('/accounts?selectFor=purchase_return')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #f1c40f', background: '#f1c40f', color: '#2c3e50', cursor: 'pointer' }}>Alış İade</button>
+          <button onClick={() => router.push('/accounts?selectFor=sales_return')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #f39c12', background: '#f39c12', color: 'white', cursor: 'pointer' }}>Satış İade</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #bdc3c7', background: '#bdc3c7', color: '#2c3e50' }}>Alış İrsaliyesi</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #f39c12', background: '#f39c12', color: 'white' }}>Satış İade</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #f1c40f', background: '#f1c40f', color: '#2c3e50' }}>Alış İade</button>
-          <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: 'transparent', color: 'white' }}>E-Fatura</button>
-          <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: 'transparent', color: 'white' }}>E-Müstahsil</button>
+          <button onClick={() => router.push('/e-fatura')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: 'transparent', color: 'white', cursor: 'pointer' }}>E-Fatura</button>
+          <button onClick={() => router.push('/e-mustahsil')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: 'transparent', color: 'white', cursor: 'pointer' }}>E-Müstahsil</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #3498db', background: 'transparent', color: 'white' }}>Fatura Rapor</button>
         </div>
         <div style={{ height: 1, background: 'rgba(255,255,255,0.15)' }} />
