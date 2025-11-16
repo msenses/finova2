@@ -33,7 +33,7 @@ export default function AccountsPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const p = params.get('selectFor');
-      if (p === 'sales' || p === 'purchase') {
+      if (p === 'sales' || p === 'purchase' || p === 'dispatch') {
         setSelectionFor(p);
       } else {
         setSelectionFor(null);
@@ -133,6 +133,10 @@ export default function AccountsPage() {
                       router.push((`/invoices/new?sales=1&account=${r.id}`) as any);
                     } else if (selectionFor === 'purchase') {
                       router.push((`/invoices/new?purchase=1&account=${r.id}`) as any);
+                    } else if (selectionFor === 'dispatch') {
+                      // İleride irsaliye oluşturma sayfası eklendiğinde burası güncellenecek
+                      // Şimdilik sadece seçim ekranı hedefleniyor; kullanıcı isterse cari detaya gidebilir
+                      router.push((`/accounts/${r.id}`) as any);
                     } else {
                       router.push((`/accounts/${r.id}`) as any);
                     }
@@ -199,7 +203,7 @@ export default function AccountsPage() {
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
           {/* Başlık şeridi */}
           <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>
-            {selectionFor === 'sales' ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'purchase' ? 'ALIŞ YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}
+            {selectionFor === 'sales' ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'purchase' ? 'ALIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'dispatch' ? 'İRSALİYE YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}
           </div>
 
           {/* Filtre/Arama Satırı */}
