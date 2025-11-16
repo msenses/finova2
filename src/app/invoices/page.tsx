@@ -123,7 +123,7 @@ export default function InvoicesPage() {
       <header style={{ display: 'grid', gap: 10, padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={() => router.push('/invoices/new?sales=1')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #e74c3c', background: '#e74c3c', color: 'white', cursor: 'pointer' }}>Yeni Satış Faturası</button>
-          <button onClick={() => router.push('/invoices/new?purchase=1')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #1abc9c', background: '#1abc9c', color: 'white', cursor: 'pointer' }}>Yeni Alış Faturası</button>
+          <button onClick={() => router.push('/accounts?selectFor=purchase')} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #1abc9c', background: '#1abc9c', color: 'white', cursor: 'pointer' }}>Yeni Alış Faturası</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #bdc3c7', background: '#bdc3c7', color: '#2c3e50' }}>Satış İrsaliyesi</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #bdc3c7', background: '#bdc3c7', color: '#2c3e50' }}>Alış İrsaliyesi</button>
           <button disabled style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 12px', borderRadius: 8, border: '1px solid #f39c12', background: '#f39c12', color: 'white' }}>Satış İade</button>

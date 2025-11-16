@@ -16,7 +16,7 @@ type Account = {
 
 export default function AccountsPage() {
   const router = useRouter();
-  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectionFor, setSelectionFor] = useState<'sales' | 'purchase' | null>(null);
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Account[]>([]);
   const [q, setQ] = useState('');
@@ -32,7 +32,12 @@ export default function AccountsPage() {
     // Sadece istemci tarafında arama parametresini oku
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      setSelectionMode(params.get('selectFor') === 'sales');
+      const p = params.get('selectFor');
+      if (p === 'sales' || p === 'purchase') {
+        setSelectionFor(p);
+      } else {
+        setSelectionFor(null);
+      }
     }
   }, []);
 
@@ -89,6 +94,7 @@ export default function AccountsPage() {
   }, [q, scope, page, router]);
 
   // Satırları inceltmek için seçim modunda daha düşük padding kullan
+  const selectionMode = !!selectionFor;
   const headPadding = selectionMode ? '8px 8px' : '10px 8px';
   const cellPadding = selectionMode ? '6px 8px' : '8px';
 
@@ -121,7 +127,20 @@ export default function AccountsPage() {
           return (
             <tr key={r.id} style={{ color: 'white' }}>
               <td style={{ padding: cellPadding }}>
-                <button onClick={() => router.push((selectionMode ? `/invoices/new?sales=1&account=${r.id}` : `/accounts/${r.id}`) as any)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}>{selectionMode ? 'Seç' : 'Cariye Git'}</button>
+                <button
+                  onClick={() => {
+                    if (selectionFor === 'sales') {
+                      router.push((`/invoices/new?sales=1&account=${r.id}`) as any);
+                    } else if (selectionFor === 'purchase') {
+                      router.push((`/invoices/new?purchase=1&account=${r.id}`) as any);
+                    } else {
+                      router.push((`/accounts/${r.id}`) as any);
+                    }
+                  }}
+                  style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.12)', color: 'white', cursor: 'pointer' }}
+                >
+                  {selectionMode ? 'Seç' : 'Cariye Git'}
+                </button>
               </td>
               {!selectionMode && <td style={{ padding: cellPadding }}>{idx + 1}.</td>}
               <td style={{ padding: cellPadding }}>{r.name}</td>
@@ -179,7 +198,9 @@ export default function AccountsPage() {
       <section style={{ padding: 16 }}>
         <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }}>
           {/* Başlık şeridi */}
-          <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>{selectionMode ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}</div>
+          <div style={{ background: '#12b3c5', color: 'white', padding: '12px 16px', fontWeight: 700, letterSpacing: 0.2 }}>
+            {selectionFor === 'sales' ? 'SATIŞ YAPILACAK CARİ SEÇİMİ' : selectionFor === 'purchase' ? 'ALIŞ YAPILACAK CARİ SEÇİMİ' : 'CARI LISTESI'}
+          </div>
 
           {/* Filtre/Arama Satırı */}
           <div style={{ display: 'flex', gap: 8, padding: 12, alignItems: 'center' }}>
