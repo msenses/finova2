@@ -6,5 +6,4 @@ export default function DispatchNewPage() {
   return <DispatchNewClientPage />;
 }
 
-*** End Patch```} />
 

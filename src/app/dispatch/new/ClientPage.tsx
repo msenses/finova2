@@ -306,6 +306,4 @@ export default function DispatchNewClientPage() {
   );
 }
 
-*** End Patch
-```} />
 
