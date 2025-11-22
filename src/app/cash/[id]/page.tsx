@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useRouter } from 'next/navigation';
+import type { Route } from 'next';
 import { useMemo, useState } from 'react';
 
 type Row = { id: string; date: string; type: 'GİRİŞ(+) ' | 'ÇIKIŞ(-)'; amount: number; title: string; note: string };
@@ -122,5 +123,3 @@ export default function CashDetailPage({ params }: { params: { id: string } }) {
     </main>
   );
 }
-*** End Patch``` }>>ని 어요… (invalid JSON) ***!
-
