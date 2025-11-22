@@ -34,6 +34,7 @@ export default function CashDetailPage({ params }: { params: { id: string } }) {
   const [incomeDocNo, setIncomeDocNo] = useState('');
   const [incomeAmount, setIncomeAmount] = useState('0.00');
   const [openAccountPick, setOpenAccountPick] = useState(false);
+  const [accountPickQuery, setAccountPickQuery] = useState('');
 
   const rows: Row[] = [
     { id: '1', date: '14.11.2022', type: 'GİRİŞ(+) ', amount: 500, title: '', note: '' },
@@ -193,18 +194,60 @@ export default function CashDetailPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          {/* Cari seçim küçük penceresi */}
+          {/* Cari seçim modalı */}
           {openAccountPick && (
             <div onClick={(e) => { e.stopPropagation(); }} style={{ position: 'fixed', inset: 0, display: 'grid', placeItems: 'center', zIndex: 1010 }}>
-              <div style={{ width: 520, maxWidth: '95%', borderRadius: 10, background: '#fff', color: '#111827', boxShadow: '0 24px 60px rgba(0,0,0,0.45)', border: '1px solid #e5e7eb' }}>
-                <div style={{ padding: 12, borderBottom: '1px solid #e5e7eb', fontWeight: 700 }}>Cari Seç</div>
-                <div style={{ padding: 12, display: 'grid', gap: 8 }}>
-                  {['Mehmet Bey', 'Ahmet Ltd.', 'Ayşe Hanım'].map((n) => (
-                    <button key={n} onClick={() => { setIncomeAccount(n); setOpenAccountPick(false); }} style={{ textAlign: 'left', padding: '8px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>{n}</button>
-                  ))}
-                  {!['Mehmet Bey', 'Ahmet Ltd.', 'Ayşe Hanım'].length && <div style={{ opacity: 0.7 }}>Kayıt yok</div>}
+              <div style={{ width: 780, maxWidth: '96%', borderRadius: 10, background: '#fff', color: '#111827', boxShadow: '0 24px 60px rgba(0,0,0,0.45)', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, borderBottom: '1px solid #e5e7eb' }}>
+                  <strong>Cari Seç</strong>
+                  <button onClick={() => setOpenAccountPick(false)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>✖</button>
                 </div>
-                <div style={{ padding: 12, borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end' }}>
+
+                {/* Arama girişi */}
+                <div style={{ padding: 12 }}>
+                  <input value={accountPickQuery} onChange={(e) => setAccountPickQuery(e.target.value)} placeholder="Ara..." style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }} />
+                </div>
+
+                {/* Tablo */}
+                <div style={{ padding: '0 12px 12px', maxHeight: 360, overflow: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: '#f3f4f6', color: '#111827' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 10px' }}>İşlem</th>
+                        <th style={{ textAlign: 'left', padding: '8px 10px' }}>Grup</th>
+                        <th style={{ textAlign: 'left', padding: '8px 10px' }}>Yetkili</th>
+                        <th style={{ textAlign: 'left', padding: '8px 10px' }}>Unvan</th>
+                        <th style={{ textAlign: 'left', padding: '8px 10px' }}>Mail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const all = [
+                          { id: '1', group: 'MÜŞTERİLER', officer: 'Ahmet Bey', title: 'Mehmet Bey', mail: 'mail@mail.com' },
+                          { id: '2', group: 'MÜŞTERİLER', officer: 'Mustafa Bey', title: 'Mustafa Bey', mail: 'mail@mail.com' },
+                          { id: '3', group: 'TEDARİKÇİ', officer: 'Ayşe Hanım', title: 'Ayşe LTD', mail: 'info@ayse.com' },
+                        ];
+                        const filtered = all.filter((r) => {
+                          const hay = `${r.group} ${r.officer} ${r.title} ${r.mail}`.toLowerCase();
+                          return hay.includes(accountPickQuery.toLowerCase());
+                        });
+                        return filtered.map((r) => (
+                          <tr key={r.id} style={{ borderBottom: '1px solid #eee' }}>
+                            <td style={{ padding: '8px 10px' }}>
+                              <button onClick={() => { setIncomeAccount(r.title); setOpenAccountPick(false); }} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #0ea5e9', background: '#0ea5e9', color: '#fff', cursor: 'pointer' }}>Seç</button>
+                            </td>
+                            <td style={{ padding: '8px 10px' }}>{r.group}</td>
+                            <td style={{ padding: '8px 10px' }}>{r.officer}</td>
+                            <td style={{ padding: '8px 10px' }}>{r.title}</td>
+                            <td style={{ padding: '8px 10px' }}>{r.mail}</td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ padding: 12, borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                   <button onClick={() => setOpenAccountPick(false)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}>Kapat</button>
                 </div>
               </div>
